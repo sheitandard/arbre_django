@@ -1,0 +1,23 @@
+{% extends "menu/header.html" %}
+{% block content %}
+{% if user.is_authenticated %}
+ <h3>Importer un fichier Gedcom: </h3>
+ 		{% for c in content%}
+	   		<p>{{c}}</p>
+		{% endfor %}
+        <form enctype="multipart/form-data" action="" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Valider">
+        </form>
+{% include 'menu/includes/htmlsnippet.html' %}
+{% else %}
+  <p>Vous n'êtes pas connecté!</p>
+  <a href="{% url 'login' %}">Se connecter</a>
+{% endif %}
+
+
+{% endblock %}
+
+
+
