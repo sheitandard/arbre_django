@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from .forms import ReadFileForm, IndividualForm
+from .forms import ReadFileForm, IndividualForm, RelationshipForm, ChildForm, ParentForm
 from django.shortcuts import get_object_or_404
+from django.forms import inlineformset_factory
 
 from datetime import datetime
 from django.db import models
@@ -13,6 +14,8 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from functools import reduce
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect
+from django.views.generic.edit import UpdateView
+
 #from menu.middleware import get_current_user
 
 
@@ -347,7 +350,6 @@ def import_gedcom(request):
 
 
 def update_individu(request, id=None):
-    """change members being in a special team"""
 
     #queryset = Individual.objects.filter(id=ind_id)
 
@@ -367,16 +369,36 @@ def update_individu(request, id=None):
     instance=get_object_or_404(Individual,id=id)
     #instance=Individual.objects.filter(id=id)
     print(instance)
-    print("bouh")
+
+    #indiFormSet = inlineformset_factory(Individual,Relationship ,form=RelationshipForm, fk_name='parent1')
     form=IndividualForm(request.POST or None, instance=instance)
-    #if request.POST:
+    #rform = RelationshipForm(request.POST, instance=Relationship()
+    #cform = ChildForm(request.POST,  instance=Child())
+
+    #if request.method == "POST":
+    #    formset = indiFormSet(request.POST, request.FILES, instance=instance)
+    #    if formset.is_valid():
+    #        formset.save()
+            # Do something. Should generally end with a redirect. For example:
+    #        return HttpResponseRedirect(instance.get_absolute_url())
+    #else:
+    #    formset = indiFormSet(instance=instance)
+    #return render(request, 'menu/individual_detail_update.html', {'formset': formset})
+
+#if request.POST:
     #    form = IndividualForm(request.POST)
 
-    if form.is_valid():
+    if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
+        #relation_instance=rform.save(commit=False)
+        #child_instance=cform.save(commit=False)
+        #relation_instance.parent1=instance
+        #relation_instance.save()
+        #child_instance.parent1=instance
+        #child_instance.save()
         instance.save()
         return HttpResponseRedirect(instance.get_absolute_url())
-    context={ 
+    context={
                 "form":form,}
     return render(request, 'menu/individual_detail_update.html', context )
 
@@ -389,3 +411,21 @@ def update_individu(request, id=None):
     #    form = IndividualForm(instance=ind)
 
      #   return render_to_response('menu/individual_update.html',{ 'form':form }, context_instance=RequestContext(request))
+
+def update_parents(request, id=None):
+
+
+    instance=get_object_or_404(Individual,id=id)
+    instance_child=get_object_or_404(Child,child=instance)
+    print(instance)
+    form=ParentForm(request.POST or None, instance=instance_child)
+
+
+    if form.is_valid():# and rform.is_valid() and cform.is_valid():
+        instance_child=form.save(commit=False)
+
+        instance_child.save()
+        return HttpResponseRedirect(instance.get_absolute_url())
+    context={
+                "form":form,}
+    return render(request, 'menu/individual_parent_update.html', context )

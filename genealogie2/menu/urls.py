@@ -33,6 +33,8 @@ urlpatterns = [
     #url('', ListView.as_view( queryset=query,template_name="menu/home.html")),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
+	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),
+	#url('^individu/(?P<id>\d+)/update/$', IndividuCreate.as_view(), name = 'update_individu'),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
 	
 	#url('individu/<int:pk>', views.individual_detail_view(), name='Information'),

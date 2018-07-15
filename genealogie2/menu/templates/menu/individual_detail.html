@@ -56,7 +56,12 @@
              {% if not parent.parent2.private or request.user|has_group:"tree_admin" %} 
               <a href="/individu/{{parent.parent2.id}}">  {{parent.parent2}}</a>{% endif %} 
            </li>
-           {% endfor %}{% endif %} 
+           {% endfor %}
+          <p><a href="/individu/{{individual.id}}/update_parents/">Modifier les parents</a></p>
+            {% else %}
+            <p><a href="/individu/{{individual.id}}/add_parents/">Ajouter les parents</a></p>
+            {% endif %}
+
  </ul>
 </div>
 

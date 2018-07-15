@@ -1,6 +1,8 @@
 {% extends "menu/header.html" %}
 {% load static %}
 {% block content %}
+{% load has_group %}
+
 <!--
 <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
@@ -26,16 +28,20 @@
    		<td width="15%">{% if individu.date_of_birth is not none %}   {{ individu.nice_birthdate}} {%endif %}</td>
    		<td width="15%">{% if individu.date_of_death is not none %}   {{ individu.nice_deathdate}} {%endif %}</td>
    		<td width="20%">{% for relation in individu.get_spouses %} 
-		   		{% if individu.id == relation.parent1.id %}
+		   		{% if individu.id == relation.parent1.id  %}
+					 {% if not relation.parent2.private or request.user|has_group:"tree_admin" %}
 		   				<a href="/individu/{{relation.parent2.id}}"> {{ relation.parent2}} </a> ,
+					{% endif %}
 				{% else %}
+					{% if not relation.parent1.private or request.user|has_group:"tree_admin" %}
 		   				<a href="/individu/{{relation.parent1.id}}"> {{ relation.parent1}} </a> ,
-
+					{% endif %}
 		   		{% endif %}{%endfor %}</td>
    		<td width="20%">
    			{% for child in individu.get_children %} 
-		   		
-		   		<a href="/individu/{{child.child.id}}"> {{ child.child}} </a> ,
+		   		{% if not child.child.private or request.user|has_group:"tree_admin" %}
+		   			<a href="/individu/{{child.child.id}}"> {{ child.child}} </a> ,
+			{% endif %}
 				{%endfor %}</td>
    		</td></tr>
 		<!--<p><a href="/individu/{{individu.id}}">  {{ individu.last_name}} {{ individu.first_name }}</a></p> -->

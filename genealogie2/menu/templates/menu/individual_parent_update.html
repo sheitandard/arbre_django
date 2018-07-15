@@ -1,0 +1,28 @@
+{% extends "menu/header.html" %}
+{% block content %}
+{% load has_group %}
+
+
+<body>
+ <form method='POST' action=''>{% csrf_token %}
+
+  {% if not form.instance.parent1.private or request.user|has_group:"tree_admin" %}
+  <p>Parent 1 (père) : {{ form.parent1 }}</p>
+  {% else %}
+  <p> Parent 1 (père) : Vous n'avez pas les autorisations nécessaires ! </p>
+  {% endif %}
+
+  {% if not form.instance.parent2.private or request.user|has_group:"tree_admin" %}
+  <p>Parent 2 (mère) : {{ form.parent2 }}{{form.parent2.private}}</p>
+  {% else %}
+  <p> Parent 2 (mère) : Vous n'avez pas les autorisations nécessaires ! </p>
+  {% endif %}
+
+ <input type='submit' value='Valider' />
+ </form>
+
+
+
+</body>
+
+{% endblock %}
