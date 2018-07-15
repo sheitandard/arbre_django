@@ -1,5 +1,7 @@
 from django.shortcuts import render
-from .forms import ReadFileForm
+from .forms import ReadFileForm, IndividualForm
+from django.shortcuts import get_object_or_404
+
 from datetime import datetime
 from django.db import models
 from .models import Location, Individual, Relationship, Child
@@ -10,7 +12,7 @@ import operator
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from functools import reduce
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 #from menu.middleware import get_current_user
 
 
@@ -72,81 +74,10 @@ class IndividualListView(generic.ListView):
 
 class IndividualDetailView(generic.DetailView):
     model = Individual
-    #def get_queryset(self):
-   # 	current_user=self.request.user
-    ##	print("user detail", current_user)
-    #	if not is_current_user_admin(current_user):
-    #		queryset = Individual.objects.exclude(private=True)
-    #		print(queryset)
-    #	print("queryset",self.objects)
-    #	d=Individual.objects.all()
-    #	current_user=self.request.user
-    #	print("user detail", current_user)
-    #	if not is_current_user_admin(current_user):
-     #   	#print(user, " is admin")
-      #  	self=self.exclude(private=True)
-    	#return d
-
-
-
-   # def get_context_data(self):
-   #     context = super(IndividualDetailView,self).get_context_data()
-   #     context['parents'] = self.get_object()
-   #     print("context",self.object)
- 
-    #    return context
-
-       
-    #	print("in here")
-    #	context = super().get_context_data(**kwargs)
-    #	print("context",context)
-    #	#context['now'] = timezone.now()
-    #	return context
-    
-
-
-
-#class IndivisualSearchListView(IndividualListView):
-    """
-    Display a Blog List page filtered by the search query.
-    """
-    #paginate_by = 25
-
-#    def get_queryset(self):
-#        result = super(IndividualSearchListView, self).get_queryset()
-
-###        query = self.request.GET.get('q')
-###        if query:
-####            query_list = query.split()
-####            result = result.filter(
-####                reduce(operator.and_,
-###                       (Q(last_name__icontains=q) for q in query_list)) |
-###                reduce(operator.and_,
-###                       (Q(first_name__icontains=q) for q in query_list))
- ##           )
-##
- #       return result
-
-#def get_children_from_parents(parent1, parent2):
- #       try:
-  #          children = Child.objects.filter(Q(parent1=parent1) | Q(parent2=parent1)).filter(Q(parent1=parent2) | Q(parent2=parent2))
-   #         return children
-    #    except Child.DoesNotExist:
-     #       #print("Pas de relations connues",self)
-      #      return []
-
-#def individual_detail_view(request,pk):
-#    try:
-#        
-#        if 'tree_admin' not in query_group[0].name:
-#        	#print(user, " is admin")
-#        	individu_id=Individual.objects.exclude(private=True).get(pk=pk)
-#        else:
-#        	individu_id=Individual.objects.get(pk=pk)
-#    except Individual.DoesNotExist:
-#        raise Http404("La personne n'existe pas!")
-#    
-#    return render(request,'menu/Individu_detail.html',context={'Individu':individu_id,})
+   
+#class IndividualUpdateView(generic.DetailView):
+#    model = Individual
+#    template_name = 'menu/individual_update.html' 
 
 def index(request):
 	#current_user=request.user
@@ -414,3 +345,47 @@ def import_gedcom(request):
             	return render(request, 'menu/home.html')
     return render(request, 'menu/read_file.html', locals())
 
+
+def update_individu(request, id=None):
+    """change members being in a special team"""
+
+    #queryset = Individual.objects.filter(id=ind_id)
+
+    #if request.POST:
+    #####    form = IndividualForm(request.POST, instance=queryset)
+    #####    if form.is_valid():
+    ####        form.save()
+    ###        return redirect('index')
+    ##else:
+    #    form = IndividualForm(instance=queryset)#
+
+    #template = 'menu/#individual_update.html'
+  #  kwvars = {
+    #    'form': form#,
+  #  }
+    #return render_to_response(template, kwvars, RequestContext(request)#)
+    instance=get_object_or_404(Individual,id=id)
+    #instance=Individual.objects.filter(id=id)
+    print(instance)
+    print("bouh")
+    form=IndividualForm(request.POST or None, instance=instance)
+    #if request.POST:
+    #    form = IndividualForm(request.POST)
+
+    if form.is_valid():
+        instance=form.save(commit=False)
+        instance.save()
+        return HttpResponseRedirect(instance.get_absolute_url())
+    context={ 
+                "form":form,}
+    return render(request, 'menu/individual_detail_update.html', context )
+
+    #    ind = Individual.objects.get(id=individual_id)
+    #    form = IndividualForm(request.POST, instance = ind)
+    #    form.save() #cleaned indenting, but would not save unless I added at least 6 characters.
+    #    return redirect('/index/')
+    #else:
+    #    ind = Individual.objects.get(id = individual_id)       
+    #    form = IndividualForm(instance=ind)
+
+     #   return render_to_response('menu/individual_update.html',{ 'form':form }, context_instance=RequestContext(request))

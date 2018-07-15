@@ -28,10 +28,11 @@
   {%endif %}
   
   
-
+  <p><strong>Lieu de résidence:</strong>{% if individual.place_of_residence is not none %} {{ individual.place_of_residence }}{%endif %}</p>
   <p><strong>Métier:</strong>{% if individual.occupation is not none %} {{ individual.occupation }}{%endif %}</p>
   <p><strong>Email:</strong>{% if individual.email is not none %} {{ individual.email }}{%endif %}</p> 
   <p><strong>Commentaire:</strong>{% if individual.comment is not none %} {{ individual.comment }}{%endif %}</p> 
+  <p><a href="/individu/{{individual.id}}/update/">Modifier les données</a></p>
 
 
   </td><td width="400px">

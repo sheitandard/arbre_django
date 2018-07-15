@@ -8,6 +8,8 @@ from django.http import HttpResponse
 from django.template import RequestContext, Template
 from svgwrite.container import Hyperlink
 from django.contrib.auth.models import Group
+from django.core.urlresolvers import reverse
+
 #from menu.middleware import get_current_user
 
 
@@ -98,6 +100,10 @@ class Individual(models.Model):
         #if self.date_of_birth:
         #    return self.first_name + " " + self.last_name + " " +  self.date_of_birth
         return self.get_first_name() + " " + self.get_last_name()
+
+    def get_absolute_url(self):
+        return "/individu/%i" % self.id
+        #return reverse("posts:detail", kwargs={"id":self.id})
 
 
     def get_first_name(self, is_admin=True):
