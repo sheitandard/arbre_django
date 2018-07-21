@@ -34,6 +34,11 @@ urlpatterns = [
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),
+	url('^individu/(?P<id>\d+)/add_parents/$', views.add_parents, name='add_parents'),
+	#url(r'^select2/', include('django_select2.urls')),
+	#url('^individu/add_parents/$', views.add_location, name='add_location'),
+	#url('^individu/(?P<id>\d+)/add_parents/$', views.MainView.as_view(), name='add_parent'),
+	url('.*/add_location', views.add_location_html, name='add_location'),
 	#url('^individu/(?P<id>\d+)/update/$', IndividuCreate.as_view(), name = 'update_individu'),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
 	

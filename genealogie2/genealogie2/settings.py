@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'menu',
+    'django_select2',
 ]
 
 MIDDLEWARE = [
@@ -69,6 +70,7 @@ TEMPLATES = [
             'link_name': 'menu.templates.link_name',
             'proper_paginate': 'menu.templates.proper_paginate',
             'has_group':'menu.templates.has_group',
+            'startswith':'menu.templates.startswith',
 
             }
         },

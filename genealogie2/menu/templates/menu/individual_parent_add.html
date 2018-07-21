@@ -1,0 +1,63 @@
+{% extends "menu/header.html" %}
+{% block content %}
+{% load has_group %}
+{% load startswith %}
+
+
+<body>
+{% if errors %}
+        <ul>
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+  <table>
+    <td>
+       <!--<form method='POST' action=''>{% csrf_token %}
+            Parent 1 (père) :
+                 {{ form1.as_p }}
+            <!--      <input type='submit' value='Enregistrer parent 1' name="father" />
+       </form>
+   </td>
+   <td>
+       <!--  <form method='POST' action=''>{% csrf_token %}
+        Parent 2 (mère) :
+            {{ form2.as_p }}
+                <input type='submit' value='Enregistrer' name="save"/>
+          </form>-->
+        <form method='POST' action=''>{% csrf_token %}
+            Parent 1 (père) :
+        {% for field in form1 %}
+                <div class="fieldWrapper">
+                    <p>{{ field.errors }}</p>
+                    <p> {{ field.label_tag }} {{ field }}</p>
+
+                    {% if field.name|startswith:'place' %}
+                    <a href="menu/add_location" target="_blank">Ajouter un lieu</a>
+                   <!-- <input type='submit' value='Ajouter un lieu' name="add_place"/>-->
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+         </td>
+   <td>
+            Parent 2 (mère) :
+            {% for field in form2 %}
+                <div class="fieldWrapper">
+                    <p>{{ field.errors }}</p>
+                    <p> {{ field.label_tag }} {{ field }}</p>
+                     {% if field.name|startswith:'place' %}
+                    <a href="menu/add_location.html" target="_blank">Ajouter un lieu</a>
+                    <!--<input type='submit' value='Ajouter un lieu' name="add_place"/>-->
+                    {% endif %}
+                </div>
+            {% endfor %}
+           <input type='submit' value='Enregistrer' name="save"/>
+        </form>
+   </td>
+  </table>
+
+</body>
+
+{% endblock %}

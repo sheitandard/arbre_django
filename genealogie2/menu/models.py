@@ -73,8 +73,8 @@ class Location(models.Model):
 class Individual(models.Model):
     private =  models.BooleanField(default=False)
     gedcom_id = models.CharField(max_length=10, null=True)
-    first_name = models.CharField(max_length=70,null=True, blank=True)
-    last_name = models.CharField(max_length=30,null=True, blank=True)
+    first_name = models.CharField(max_length=70,null=False, blank=True,default="?")
+    last_name = models.CharField(max_length=30,null=False, blank=True,default="?")
     gender = models.CharField( max_length=1, choices=GENDER_CHOICES,null=True, blank=True)
     is_deceased=models.BooleanField(default=False)
     image = models.ImageField("image",
@@ -160,6 +160,7 @@ class Individual(models.Model):
     def get_parents(self):
         try: 
             line = Child.objects.filter(Q(child=self))
+            print(line)
             return line
         except Child.DoesNotExist:
             #print("Pas de parent connu",self)
@@ -336,8 +337,8 @@ class Individual(models.Model):
 
 class Relationship(models.Model):
     gedcom_id = models.CharField(max_length=10,null=True)
-    parent1 = models.ForeignKey('Individual',null=True,related_name='person1', on_delete=models.SET_NULL)
-    parent2 = models.ForeignKey('Individual',null=True,related_name='person2', on_delete=models.SET_NULL)
+    parent1 = models.ForeignKey('Individual',null=True,related_name='person1',on_delete=models.CASCADE)
+    parent2 = models.ForeignKey('Individual',null=True,related_name='person2',on_delete=models.CASCADE)
     #children = models.ManyToManyField(Individual, related_name='children_set')
     date_of_marriage  = models.CharField(max_length=12,null=True, blank=True)
     place_of_marriage = models.ForeignKey(Location, related_name='place_of_marriage',null=True, blank=True, on_delete=models.SET_NULL)
@@ -367,7 +368,7 @@ class Relationship(models.Model):
 
 
 class Child(models.Model):
-    child = models.ForeignKey('Individual',null=True,related_name='child')
+    child = models.ForeignKey('Individual',null=True,related_name='child',on_delete=models.CASCADE)
     parent1 = models.ForeignKey('Individual',null=True,related_name='father', blank=True, on_delete=models.SET_NULL)
     parent2 = models.ForeignKey('Individual',null=True,related_name='mother', blank=True, on_delete=models.SET_NULL)
     class Meta:
