@@ -29,18 +29,16 @@ from django.conf.urls.static import static
 urlpatterns = [
 	url('contact/', views.contact, name='contact'),
 	url('import_gedcom/', views.import_gedcom, name='import_gedcom'),
-    #url( '', views.index, name='index'),
-    #url('', ListView.as_view( queryset=query,template_name="menu/home.html")),
+	url('list_modification/',views.ModificationListView.as_view(), name='Liste des modifications'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),
 	url('^individu/(?P<id>\d+)/add_parents/$', views.add_parents, name='add_parents'),
-	#url(r'^select2/', include('django_select2.urls')),
-	#url('^individu/add_parents/$', views.add_location, name='add_location'),
-	#url('^individu/(?P<id>\d+)/add_parents/$', views.MainView.as_view(), name='add_parent'),
+
 	url('.*/add_location', views.add_location_html, name='add_location'),
-	#url('^individu/(?P<id>\d+)/update/$', IndividuCreate.as_view(), name = 'update_individu'),
+	url('.*place_list',views.place_list, name="place_list"),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
+
 	
 	#url('individu/<int:pk>', views.individual_detail_view(), name='Information'),
 

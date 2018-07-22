@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import date
+from datetime import date,datetime
 from django.db.models import Q
 import svgwrite
 from django.utils.html import format_html
@@ -9,8 +9,8 @@ from django.template import RequestContext, Template
 from svgwrite.container import Hyperlink
 from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 
-#from menu.middleware import get_current_user
 
 
 
@@ -377,3 +377,17 @@ class Child(models.Model):
 
     def __str__(self):
         return self.child.first_name + " " + self.child.last_name
+
+class Modification(models.Model):
+    subject=models.ForeignKey(Individual)
+    user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    date=models.DateTimeField()
+    note= models.CharField(max_length=100,null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        ''' On save, update timestamps '''
+        self.date = datetime.now()
+        return super(Modification, self).save(*args, **kwargs)
+
+
+

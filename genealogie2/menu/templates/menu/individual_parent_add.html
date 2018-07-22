@@ -3,15 +3,52 @@
 {% load has_group %}
 {% load startswith %}
 
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" >
+    function update_dropdown(dropdown,json){
+        dropdown.empty();
+        dropdown.append($('<option value="" >---------</option>'))
+        $.each(json.places, function(index,entry){
+
+            dropdown.append($('<option></option>').attr('value', entry.id).text(entry.city.concat(", ",entry.department, ", ",entry.country,", ",entry.church)))
+            })
+    }
+    function reload_places(){
+         $.ajax({
+            url:"place_list",
+            data:{},
+            type:"GET",
+            dataType:"json",
+            })
+
+         .done(function(json){
+
+           update_dropdown($("#form1_place_of_birth select"), json);
+           update_dropdown($("#form1_place_of_death select"), json);
+           update_dropdown($("#form1_place_of_residence select"), json);
+           update_dropdown($("#form2_place_of_birth select"), json);
+           update_dropdown($("#form2_place_of_death select"), json);
+           update_dropdown($("#form2_place_of_residence select"), json);
+                    })
+         .fail(function(){
+                alert("Error!");
+               });
+    }
+
+    </script>
+</head>
 
 <body>
-{% if errors %}
+
+    {% if errors %}
         <ul>
             {% for error in errors %}
             <li>{{ error }}</li>
             {% endfor %}
         </ul>
     {% endif %}
+    <button  onclick="reload_places();">Rafraichir</button>
   <table>
     <td>
        <!--<form method='POST' action=''>{% csrf_token %}
@@ -31,11 +68,11 @@
         {% for field in form1 %}
                 <div class="fieldWrapper">
                     <p>{{ field.errors }}</p>
-                    <p> {{ field.label_tag }} {{ field }}</p>
+                    <p id="form1_{{field.name}}"> {{ field.label_tag }} {{ field }}</p>
 
                     {% if field.name|startswith:'place' %}
                     <a href="menu/add_location" target="_blank">Ajouter un lieu</a>
-                   <!-- <input type='submit' value='Ajouter un lieu' name="add_place"/>-->
+                    <!--<input type='submit' value='Ajouter un lieu' name="add_place_form1_{{ field.name}}"/>-->
                     {% endif %}
                 </div>
             {% endfor %}
@@ -46,10 +83,10 @@
             {% for field in form2 %}
                 <div class="fieldWrapper">
                     <p>{{ field.errors }}</p>
-                    <p> {{ field.label_tag }} {{ field }}</p>
+                    <p id="form2_{{field.name}}"> {{ field.label_tag }} {{ field }}</p>
                      {% if field.name|startswith:'place' %}
                     <a href="menu/add_location.html" target="_blank">Ajouter un lieu</a>
-                    <!--<input type='submit' value='Ajouter un lieu' name="add_place"/>-->
+                    <!--<input type='submit' value='Ajouter un lieu' name="add_place_form2_{{ field.name}}"/>-->
                     {% endif %}
                 </div>
             {% endfor %}

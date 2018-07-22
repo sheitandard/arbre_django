@@ -5,7 +5,7 @@ from django.forms import inlineformset_factory
 
 from datetime import datetime
 from django.db import models
-from .models import Location, Individual, Relationship, Child, month_list
+from .models import Location, Individual, Relationship, Child, month_list, Modification
 from django.contrib.auth.models import Group
 
 from django.views import generic
@@ -13,7 +13,7 @@ import operator
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from functools import reduce
 from django.db.models import Q
-from django.http import Http404, HttpResponseRedirect,HttpResponse
+from django.http import Http404, HttpResponseRedirect,HttpResponse, JsonResponse
 from django.views.generic.edit import UpdateView, FormView
 from django.views.generic import TemplateView
 from django.contrib import messages
@@ -21,62 +21,28 @@ from django.contrib import messages
 
 
 
-#from menu.middleware import get_current_user
-
-#month_list=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
-
-
 pays_connus = ["FRANCE","POLOGNE","ALLEMAGNE","ALGERIE", "ITALIE","ESPAGNE","ROYAUNE-UNI", "ANGLETERRE"]
 
-#global current_user
 
 class IndividualListView(generic.ListView):
     model = Individual
     paginate_by = 50
-    #context_object_name = 'Liste des noms'   # your own name for the list as a template variable
-    #queryset = Individual.objects.exclude(last_name='?').exclude(first_name='?').order_by('last_name')
-    template_name = 'menu/home.html' 
-    #"#def listing(request):
-    #"    individu_list = Individual.objects.all()
-    #    paginator = Paginator(individu_list, 25) # Show 25 contacts per page
-#
-      #  page = request.GET.get('page')
-#	 #   individus = paginator.get_page(page)
-#	    return render(request, 'home.html', {'Individus': individus})
-#    def url_add_query(context, **kwargs):
-#	    request = context.get('request')
-
-#	    get = request.GET.copy()
-#	    get.update(kwargs)
-
-#	    path = '%s?' % request.path
-#	    for query, val in get.items():
-#	        path += '%s=%s&' % (query, val)
-#
-#	    return path[:-1]
+    template_name = 'menu/home.html'
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        
         d=Individual.objects.all()
         current_user=self.request.user
         if not is_current_user_admin(current_user):
-            #print(user, " is admin")
             d=d.exclude(private=True)
-
-   
 
         if query:
             query_element=query.split(" ")
-            #tag_qs = reduce(operator.or_, (Q(last_name__icontains=x) for x in query_element))
-            #tag_qs2 = reduce(operator.or_, (Q(first_name__icontains=x) for x in query_element))
 
             for element in query_element:
                 d=d.filter(Q(last_name__icontains=element)  | Q(first_name__icontains=element) )
-            #d=Individual.objects.filter(tag_qs2)
             if '?' not in query:
                 d=d.exclude(last_name='?').exclude(first_name='?')
-
             return d
         else:
             return Individual.objects.exclude(last_name='?').exclude(first_name='?')
@@ -84,9 +50,15 @@ class IndividualListView(generic.ListView):
 class IndividualDetailView(generic.DetailView):
     model = Individual
    
-#class IndividualUpdateView(generic.DetailView):
-#    model = Individual
-#    template_name = 'menu/individual_update.html' 
+class ModificationListView(generic.ListView):
+    model = Modification
+    paginate_by = 30
+    template_name = 'menu/list_modif.html'
+
+    def get_queryset(self):
+
+        return Modification.objects.order_by('-date')
+
 
 def index(request):
     #current_user=request.user
@@ -119,6 +91,7 @@ def add_location(content_part):
         print("try put location")
         place=Location(city=ville, country=pays, church=paroisse, department=departement)
         place.save()
+
     else:
         try:
             print("Cet endroit est déjà dans la base de données",ville, departement, pays, paroisse)
@@ -356,81 +329,32 @@ def import_gedcom(request):
 
 
 def update_individu(request, id=None):
-
-    #queryset = Individual.objects.filter(id=ind_id)
-
-    #if request.POST:
-    #####    form = IndividualForm(request.POST, instance=queryset)
-    #####    if form.is_valid():
-    ####        form.save()
-    ###        return redirect('index')
-    ##else:
-    #    form = IndividualForm(instance=queryset)#
-
-    #template = 'menu/#individual_update.html'
-  #  kwvars = {
-    #    'form': form#,
-  #  }
-    #return render_to_response(template, kwvars, RequestContext(request)#)
     instance=get_object_or_404(Individual,id=id)
-    #instance=Individual.objects.filter(id=id)
     print(instance)
-
-    #indiFormSet = inlineformset_factory(Individual,Relationship ,form=RelationshipForm, fk_name='parent1')
     form=IndividualForm(request.POST or None, instance=instance)
-    #rform = RelationshipForm(request.POST, instance=Relationship()
-    #cform = ChildForm(request.POST,  instance=Child())
-
-    #if request.method == "POST":
-    #    formset = indiFormSet(request.POST, request.FILES, instance=instance)
-    #    if formset.is_valid():
-    #        formset.save()
-            # Do something. Should generally end with a redirect. For example:
-    #        return HttpResponseRedirect(instance.get_absolute_url())
-    #else:
-    #    formset = indiFormSet(instance=instance)
-    #return render(request, 'menu/individual_detail_update.html', {'formset': formset})
-
-#if request.POST:
-    #    form = IndividualForm(request.POST)
 
     if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
-        #relation_instance=rform.save(commit=False)
-        #child_instance=cform.save(commit=False)
-        #relation_instance.parent1=instance
-        #relation_instance.save()
-        #child_instance.parent1=instance
-        #child_instance.save()
         instance.save()
+        m = Modification(subject=instance, user=request.user, note="modification des données personnelles" )
+        m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
     context={
                 "form":form,}
     return render(request, 'menu/individual_detail_update.html', context )
 
-    #    ind = Individual.objects.get(id=individual_id)
-    #    form = IndividualForm(request.POST, instance = ind)
-    #    form.save() #cleaned indenting, but would not save unless I added at least 6 characters.
-    #    return redirect('/index/')
-    #else:
-    #    ind = Individual.objects.get(id = individual_id)       
-    #    form = IndividualForm(instance=ind)
 
-     #   return render_to_response('menu/individual_update.html',{ 'form':form }, context_instance=RequestContext(request))
 
 def update_parents(request, id=None):
-
-
     instance=get_object_or_404(Individual,id=id)
     instance_child=get_object_or_404(Child,child=instance)
     print(instance)
     form=ParentForm(request.POST or None, instance=instance_child)
-
-
-    if form.is_valid():# and rform.is_valid() and cform.is_valid():
+    if form.is_valid():
         instance_child=form.save(commit=False)
-
         instance_child.save()
+        m = Modification(subject=instance, user=request.user, note="parents modifiés")
+        m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
     context={
                 "form":form,}
@@ -455,15 +379,13 @@ def transform_date(str_date):
 
 def add_parents(request, id=None):
     print("add_parent")
+    print(request.POST)
     instance=get_object_or_404(Individual,id=id)
     try:
         instance_child=Child.objects.get(child=instance)
     except Child.DoesNotExist:
         instance_child = Child(child=instance, parent1=None, parent2=None)
-        #instance_child.save()
 
-    #print(instance_child)
-    print(request.POST)
     form1 = IndividualForm(None, instance=instance_child.parent1)
     form2 = IndividualForm(None,instance=instance_child.parent2)
 
@@ -481,16 +403,15 @@ def add_parents(request, id=None):
                 form2.clean()
                 form1.clean()
 
-
-
-
                 if instance_child.parent2 is None:
                     mother = form2.save(commit=False)
 
                     mother.date_of_birth=transform_date(mother.date_of_birth)
                     mother.date_of_death = transform_date(mother.date_of_death)
                     print(mother.date_of_birth)
-                    #mother.save()
+                    mother.save()
+                    m = Modification(subject=instance, user=request.user, note="ajout d'un parent (mère)")
+                    m.save()
                     print("mother", mother.id, mother.first_name)
                     instance_child.parent2=mother
                     #instance_child.save()
@@ -500,21 +421,23 @@ def add_parents(request, id=None):
                     father = form1.save(commit=False)
                     father.date_of_birth = transform_date(father.date_of_birth)
                     father.date_of_death = transform_date(father.date_of_death)
-                    #father.save()
+                    father.save()
+                    m = Modification(subject=instance, user=request.user, note="ajout d'un parent (père)")
+                    m.save()
                     print("father", father.id, father.first_name)
                     instance_child.parent1=father
-                    #instance_child.save()
+                    instance_child.save()
+                    m = Modification(subject=instance, user=request.user, note="ajout d'une relation parent-enfant")
+                    m.save()
                 else:
                     father=instance_child.parent1
                 p = Relationship(parent1=father, parent2=mother, status='mariage ou Pacs')
-                #p.save()
-                #if not form1.is_valid():
-                #    return render(request, 'menu/individual_parent_add.html', context)
-            #else:
-            #    errors.append('Le nom et prénom sont obligatoires.')
+                p.save()
+                m = Modification(subject=father, user=request.user, note="ajout d'une relation")
+                m.save()
 
-    elif 'add_place' in request.POST:
-        add_location_html(None, old_request=request)
+    elif 'Ajouter un lieu' in request.POST.values():
+        add_location_html(request, old_request=request)
     print("errors",errors)
     if instance_child.parent1 is not None and instance_child.parent2 is not None:
         return HttpResponseRedirect(instance.get_absolute_url())
@@ -527,25 +450,27 @@ def add_parents(request, id=None):
     return render(request, 'menu/individual_parent_add.html', context )
 
 
-def add_location_html(request, old_request=None):
-    #print("request",request.META.get('HTTP_REFERER').split("/menu/add_location"))
+
+
+def add_location_html(request):
     form = LocationForm(None)
-    #if "add_location" not in request.META.get('HTTP_REFERER'):
-    previous_url=request.META.get('HTTP_REFERER').split("/menu/add_location")[0]
-    if 'save' in request.POST:
+    if 'save_location' in request.POST:
+            print("yes there is a save_location")
             form = LocationForm(request.POST or None)
             if form.is_valid() :
                 form.clean()
                 location = form.save(commit=False)
                 location.save()
-                #render(old_request, previous_url)
-                return HttpResponse('<script type="text/javascript">window.close(); window.parent.location.href = "/";</script>')
-                #return HttpResponseRedirect(previous_url)
+                m = Modification(subject=location, user=request.user, note="ajout d'un lieu")
+                m.save()
+                return HttpResponse('<script type="text/javascript">window.opener.reload_places();window.close();</script>')
 
     context={
                 "form":form,
-
                 }
     return render(request, 'menu/location_add.html', context )
 
-
+def place_list(request):
+    p = Location.objects.all()
+    p2=list(p.values('id','city','department','country','church'))
+    return JsonResponse({"places":p2})

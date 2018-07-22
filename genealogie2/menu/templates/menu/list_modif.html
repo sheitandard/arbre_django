@@ -1,0 +1,36 @@
+{% extends "menu/header.html" %}
+{% load static %}
+{% block content %}
+
+
+<!--
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+    $('#people').DataTable();
+} );
+</script>
+-->
+{% if user.is_authenticated %}
+
+   <table summary="list_modif" border="1" id="modif">
+	<thead><tr><th> Date  </th><th>Utilisateur   </th><th>Individu modifié </th><th>modification   </th></tr></thead>
+   {% for modif in object_list %}
+   		<tr>
+   		<td width="25%">  {{ modif.date}}</td>
+   		<td width="25%">   {{ modif.user}} </td>
+   		<td width="25%"><a href="/individu/{{modif.subject.id}}">  {{ modif.subject.first_name}} {{ modif.subject.last_name}}</a> </td>
+   		<td width="25%">   {{ modif.note}}		</td>
+        </tr>
+		<!--<p><a href="/individu/{{individu.id}}">  {{ individu.last_name}} {{ individu.first_name }}</a></p> -->
+	{% endfor %}
+	</table>
+{% include 'menu/includes/htmlsnippet.html' %}
+{% else %}
+  <p>Vous n'êtes pas connecté!</p>
+  <a href="{% url 'login' %}">Se connecter</a>
+{% endif %}
+{% endblock %}
+
