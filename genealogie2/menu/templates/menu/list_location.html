@@ -1,0 +1,33 @@
+{% extends "menu/header.html" %}
+{% load static %}
+{% block content %}
+
+
+<!--
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+    $('#people').DataTable();
+} );
+</script>
+-->
+{% if user.is_authenticated %}
+   {% include 'menu/includes/search_box_places.html' %}
+   <table summary="list_location" border="1" id="locations">
+	<thead><tr><th> Pays  </th></tr></thead>
+   {% for loc in object_list %}
+   		<tr>
+   		<td width="25%">  <a href="/lieu/{{loc.id}}">  {{ loc.country}} {{ loc.city}} {{ loc.department}} {{ loc.church}}</a></td>
+
+        </tr>
+		<!--<p><a href="/individu/{{individu.id}}">  {{ individu.last_name}} {{ individu.first_name }}</a></p> -->
+	{% endfor %}
+	</table>
+{% include 'menu/includes/htmlsnippet.html' %}
+{% else %}
+  <p>Vous n'êtes pas connecté!</p>
+  <a href="{% url 'login' %}">Se connecter</a>
+{% endif %}
+{% endblock %}

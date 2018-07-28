@@ -11,8 +11,9 @@ from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
-
-
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import fields
+from django.contrib.contenttypes.fields import GenericRelation
 
 
 GENDER_CHOICES = (
@@ -44,7 +45,24 @@ MONTH_CHOICES = (
 
 month_list=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
 month_list_french=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
-# Create your models here.
+# Create your models here
+
+class Modification(models.Model):
+    #subject = models.ForeignKey(Individual,on_delete=models.CASCADE)
+    #subject_place = models.ForeignKey(Location)
+    #subject = fields.GenericForeignKey('subject_ind', 'subject_place')
+    content_type = models.ForeignKey(ContentType,on_delete=models.CASCADE, null=True)
+    object_id = models.PositiveIntegerField(null=True)
+    subject = fields.GenericForeignKey('content_type', 'object_id')
+    user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    date=models.DateTimeField()
+    test=models.DateTimeField(null=True)
+    note= models.CharField(max_length=100,null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        ''' On save, update timestamps '''
+        self.date = datetime.now()
+        return super(Modification, self).save(*args, **kwargs)
 
 class Location(models.Model):
     city = models.CharField(max_length=40,null=True, blank=True)
@@ -53,9 +71,12 @@ class Location(models.Model):
     church = models.CharField(max_length=30,null=True, blank=True)
     city_today = models.CharField(max_length=40,null=True, blank=True)
     country_today = models.CharField(max_length=40,null=True, blank=True)
+    modif = GenericRelation(Modification)
     class Meta:
         ordering = ["country", "city", "church"]
         verbose_name_plural = "Place"
+    def get_absolute_url(self):
+        return "/lieu/%i" % self.id
     def __str__(self):
         city="Inconnu"
         department="Inconnu"
@@ -88,6 +109,7 @@ class Individual(models.Model):
     occupation = models.CharField(max_length=100,null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     email = models.CharField(max_length=30,null=True, blank=True)
+    modif = GenericRelation(Modification)
     #family_as_parent = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_parent')
     #family_as_child = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_child')
     
@@ -378,16 +400,7 @@ class Child(models.Model):
     def __str__(self):
         return self.child.first_name + " " + self.child.last_name
 
-class Modification(models.Model):
-    subject=models.ForeignKey(Individual)
-    user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    date=models.DateTimeField()
-    note= models.CharField(max_length=100,null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        ''' On save, update timestamps '''
-        self.date = datetime.now()
-        return super(Modification, self).save(*args, **kwargs)
 
 
 

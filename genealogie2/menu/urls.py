@@ -30,18 +30,20 @@ urlpatterns = [
 	url('contact/', views.contact, name='contact'),
 	url('import_gedcom/', views.import_gedcom, name='import_gedcom'),
 	url('list_modification/',views.ModificationListView.as_view(), name='Liste des modifications'),
+	url('list_places/',views.PlaceListView.as_view(), name='Liste des lieux'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),
 	url('^individu/(?P<id>\d+)/add_parents/$', views.add_parents, name='add_parents'),
-
+	url('^lieu/(?P<pk>\d+)$', views.PlaceDetailView.as_view(), name='detail_lieu') ,
+	url('^lieu/(?P<id>\d+)/update/$', views.update_place, name='update_lieu'),
 	url('.*/add_location', views.add_location_html, name='add_location'),
 	url('.*place_list',views.place_list, name="place_list"),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
 
-	
+
 	#url('individu/<int:pk>', views.individual_detail_view(), name='Information'),
 
-] 
+]
 
 

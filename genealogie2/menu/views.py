@@ -49,7 +49,7 @@ class IndividualListView(generic.ListView):
 
 class IndividualDetailView(generic.DetailView):
     model = Individual
-   
+
 class ModificationListView(generic.ListView):
     model = Modification
     paginate_by = 30
@@ -58,6 +58,27 @@ class ModificationListView(generic.ListView):
     def get_queryset(self):
 
         return Modification.objects.order_by('-date')
+
+class PlaceListView(generic.ListView):
+    model = Location
+    paginate_by = 30
+    template_name = 'menu/list_location.html'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        d=Location.objects.all()
+
+        if query:
+            query_element=query.split(" ")
+
+            for element in query_element:
+                d=d.filter(Q(country__icontains=element)  | Q(city__icontains=element) | Q(department__icontains=element) | Q(church__icontains=element) )
+
+        return d
+
+class PlaceDetailView(generic.DetailView):
+    model = Location
+    template_name = 'menu/detail_place.html'
 
 
 def index(request):
@@ -163,42 +184,8 @@ def is_current_user_admin(user=None):
         return True
     return False
 
-#def get_spouses(individu):
- #   try:
-  #      
- #       spouses = Relationship.objects.filter(Q(parent1=individu) | Q(parent2=individu))
- #       if not is_current_user_admin(current_user):
- #       	spouses=spouses.exclude(private=True)
- #       return spouses
- #   except Relationship.DoesNotExist:
- #       #print("Pas de relations connues",self)
- #       return []
 
 
-#def get_children(individu):
-#    try:
-#        
-#        children = Child.objects.filter(Q(parent1=individu) | Q(parent2=individu))
-#        if not is_current_user_admin(current_user):
-#        	children=children.exclude(private=True)
-#        return children
-#    except Child.DoesNotExist:
-#        #print("Pas de relations connues",self)
-#        return []
-
-#def get_parents(individu):
-#    try:
-#        
-#        
-#        line = Child.objects.filter(Q(child=individu))
-#        if not is_current_user_admin(current_user):
- #       	line=line.exclude(private=True)
- #       return line
- #   except Child.DoesNotExist:
- #       #print("Pas de parent connu",self)
- #       return []
-    
-   
 def import_gedcom(request):
     form = ReadFileForm()
     encodage='utf-8'
@@ -359,6 +346,22 @@ def update_parents(request, id=None):
     context={
                 "form":form,}
     return render(request, 'menu/individual_parent_update.html', context )
+
+
+def update_place(request, id=None):
+    instance=get_object_or_404(Location,id=id)
+
+    form=LocationForm(request.POST or None, instance=instance)
+
+    if form.is_valid():# and rform.is_valid() and cform.is_valid():
+        instance=form.save(commit=False)
+        instance.save()
+        m = Modification(subject=instance, user=request.user, note="modification d'un lieu" )
+        m.save()
+        return HttpResponseRedirect(instance.get_absolute_url())
+    context={
+                "form":form,}
+    return render(request, 'menu/place_detail_update.html', context )
 
 def get_first_query(myDict):
     outDict={}
