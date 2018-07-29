@@ -323,6 +323,7 @@ def update_individu(request, id=None):
     if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
         instance.save()
+        print(instance)
         m = Modification(subject=instance, user=request.user, note="modification des données personnelles" )
         m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
@@ -356,6 +357,8 @@ def update_place(request, id=None):
     if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
         instance.save()
+        print("new lieu")
+        print(instance)
         m = Modification(subject=instance, user=request.user, note="modification d'un lieu" )
         m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
@@ -462,9 +465,10 @@ def add_location_html(request):
             form = LocationForm(request.POST or None)
             if form.is_valid() :
                 form.clean()
-                location = form.save(commit=False)
-                location.save()
-                m = Modification(subject=location, user=request.user, note="ajout d'un lieu")
+                loc = form.save(commit=False)
+                loc.save()
+
+                m = Modification(subject=loc, user=request.user, note="ajout d'un lieu")
                 m.save()
                 return HttpResponse('<script type="text/javascript">window.opener.reload_places();window.close();</script>')
 

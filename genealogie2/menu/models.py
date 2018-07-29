@@ -51,7 +51,7 @@ class Modification(models.Model):
     #subject = models.ForeignKey(Individual,on_delete=models.CASCADE)
     #subject_place = models.ForeignKey(Location)
     #subject = fields.GenericForeignKey('subject_ind', 'subject_place')
-    content_type = models.ForeignKey(ContentType,on_delete=models.CASCADE, null=True)
+    content_type = models.ForeignKey(ContentType,on_delete=models.SET_NULL, null=True)
     object_id = models.PositiveIntegerField(null=True)
     subject = fields.GenericForeignKey('content_type', 'object_id')
     user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -75,9 +75,9 @@ class Location(models.Model):
     class Meta:
         ordering = ["country", "city", "church"]
         verbose_name_plural = "Place"
-    def get_absolute_url(self):
-        return "/lieu/%i" % self.id
-    def __str__(self):
+
+    def __str__(self) :
+
         city="Inconnu"
         department="Inconnu"
         church=""
@@ -90,6 +90,8 @@ class Location(models.Model):
 
         return city  + ", " + department + ", " + self.country + ", " + church
 
+    def get_absolute_url(self):
+        return "/lieu/%i" % self.id
 
 class Individual(models.Model):
     private =  models.BooleanField(default=False)
