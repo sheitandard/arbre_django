@@ -14,7 +14,33 @@
 </script>
 -->
 {% if user.is_authenticated %}
+
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" >
+
+    function reload_places(){
+         $.ajax({
+            url:"place_list",
+            data:{},
+            type:"GET",
+            dataType:"json",
+            })
+
+         .done(function(json){
+
+           window.location.reload(true);
+                    })
+         .fail(function(){
+                alert("Error!");
+               });
+    }
+
+    </script>
+</head>
+
    {% include 'menu/includes/search_box_places.html' %}
+<a href="menu/add_location.html" target="_blank">Ajouter un lieu</a>
    <table summary="list_location" border="1" id="locations">
 	<thead><tr><th> Pays  </th></tr></thead>
    {% for loc in object_list %}
