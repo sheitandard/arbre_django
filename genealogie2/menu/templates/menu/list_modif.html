@@ -24,8 +24,10 @@
    		<td width="25%">
 			{% if modif.subject.first_name %}
 			<a href="/individu/{{modif.subject.id}}">  {{ modif.subject.first_name}} {{ modif.subject.last_name}}</a> </td>
-			{% else %}
+			{% elif  modif.subject.city %}
 			<a href="/lieu/{{modif.subject.id}}">  {{ modif.subject.city}}, {{ modif.subject.country}}, {{ modif.subject.department}},{{ modif.subject.church}}</a> </td>
+			{% else %}
+			<a > Objet supprimé</a> </td>
 			{% endif %}
    		<td width="25%">   {{ modif.note}}		</td>
         </tr>

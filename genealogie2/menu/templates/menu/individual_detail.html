@@ -33,6 +33,10 @@
   <p><strong>Email:</strong>{% if individual.email is not none %} {{ individual.email }}{%endif %}</p> 
   <p><strong>Commentaire:</strong>{% if individual.comment is not none %} {{ individual.comment }}{%endif %}</p> 
   <p><a href="/individu/{{individual.id}}/update/">Modifier les données</a></p>
+    {% if request.user|has_group:"tree_admin" %}
+  <p><a href="/individu/{{individual.id}}/delete/">Supprimer l'individu</a></p>
+
+   {% endif %}
 
 
   </td><td width="400px">

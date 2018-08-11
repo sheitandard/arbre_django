@@ -51,7 +51,7 @@ class Modification(models.Model):
     #subject = models.ForeignKey(Individual,on_delete=models.CASCADE)
     #subject_place = models.ForeignKey(Location)
     #subject = fields.GenericForeignKey('subject_ind', 'subject_place')
-    content_type = models.ForeignKey(ContentType,on_delete=models.SET_NULL, null=True)
+    content_type = models.ForeignKey(ContentType,on_delete=models.SET_NULL, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True)
     subject = fields.GenericForeignKey('content_type', 'object_id')
     user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -71,7 +71,7 @@ class Location(models.Model):
     church = models.CharField(max_length=30,null=True, blank=True)
     city_today = models.CharField(max_length=40,null=True, blank=True)
     country_today = models.CharField(max_length=40,null=True, blank=True)
-    modif = GenericRelation(Modification)
+    #modif = GenericRelation(Modification)
     class Meta:
         ordering = ["country", "city", "church"]
         verbose_name_plural = "Place"
@@ -111,7 +111,7 @@ class Individual(models.Model):
     occupation = models.CharField(max_length=100,null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     email = models.CharField(max_length=30,null=True, blank=True)
-    modif = GenericRelation(Modification)
+    #modif = GenericRelation(Modification)
     #family_as_parent = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_parent')
     #family_as_child = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_child')
     
@@ -184,7 +184,7 @@ class Individual(models.Model):
     def get_parents(self):
         try: 
             line = Child.objects.filter(Q(child=self))
-            print(line)
+
             return line
         except Child.DoesNotExist:
             #print("Pas de parent connu",self)
@@ -230,23 +230,33 @@ class Individual(models.Model):
         for parent in parents:
             #print(parent.parent1)
             #print(parent.parent2.last_name)
-            link = Hyperlink(str(parent.parent1.id), target='_top')
+            if parent.parent1:
+                link = Hyperlink(str(parent.parent1.id), target='_top')
 
-            link.add(dwg.text("".join(parent.parent1.get_first_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
-            link.add(dwg.text("".join(parent.parent1.get_last_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y+space_name), fill='black',text_anchor='middle', font_size=str(size_font) + "px"))
-            dwg.add(link)
+                link.add(dwg.text("".join(parent.parent1.get_first_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
+                link.add(dwg.text("".join(parent.parent1.get_last_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y+space_name), fill='black',text_anchor='middle', font_size=str(size_font) + "px"))
+                dwg.add(link)
 
-            dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font), (x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
+                dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font), (x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
 
             #dwg.add(dwg.line((x_individu-20, y_individu-20+size_font), (x_individu, y_individu-size_font), stroke='grey'))
-            link = Hyperlink(str(parent.parent2.id), target='_top')
-            link.add(dwg.text("".join(parent.parent2.get_first_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
-            link.add(dwg.text("".join(parent.parent2.get_last_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y+space_name), fill='black', text_anchor='middle',font_size=str(size_font) + "px"))
-            dwg.add(link)
-            dwg.add(dwg.line((x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font), (x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
-            dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), (x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
-            dwg.add(dwg.line((x_individu, y_individu-space_between_y+space_name+size_font+5), (x_individu, y_individu-size_font), stroke='grey'))
-            #dwg.add(dwg.line((x_individu+20, y_individu-20+size_font), (x_individu, y_individu-size_font), stroke='grey'))
+            if parent.parent2:
+                link = Hyperlink(str(parent.parent2.id), target='_top')
+                link.add(dwg.text("".join(parent.parent2.get_first_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
+                link.add(dwg.text("".join(parent.parent2.get_last_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y+space_name), fill='black', text_anchor='middle',font_size=str(size_font) + "px"))
+                dwg.add(link)
+                dwg.add(dwg.line((x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font), (x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
+            if parent.parent1 and parent.parent2:
+                dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), (x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
+                dwg.add(dwg.line((x_individu, y_individu-space_between_y+space_name+size_font+5), (x_individu, y_individu-size_font), stroke='grey'))
+            elif parent.parent1:
+                dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5),
+                                 (x_individu, y_individu - size_font), stroke='grey'))
+            elif parent.parent2:
+                dwg.add(dwg.line(
+                    (x_individu + (space_between_x / 2), y_individu - space_between_y + space_name + size_font + 5),
+                    (x_individu, y_individu - size_font), stroke='grey'))
+
 
 
         #dwg = svgwrite.Drawing('test.svg')
@@ -263,13 +273,15 @@ class Individual(models.Model):
                 
                 x_spouse=x_individu+50*nb_spouse+50*nb_child
                 y_spouse=y_individu
-                link = Hyperlink(str(real_spouse.id), target='_top')
-                link.add(dwg.text("".join(real_spouse.get_first_name(is_admin)), insert=(x_spouse, y_spouse), fill='black',text_anchor='middle',font_size=str(size_font-1)+"px"))
-                link.add(dwg.text("".join(real_spouse.get_last_name(is_admin)), insert=(x_spouse, y_spouse+space_name), fill='black',text_anchor='middle', font_size=str(size_font) + "px"))
-                dwg.add(link)
-                dwg.add(dwg.line((x_individu, y_individu+space_name+size_font), (x_individu,  y_individu+space_name+2*nb_spouse+size_font), stroke='grey'))
-                dwg.add(dwg.line((x_spouse, y_spouse+space_name+size_font), (x_spouse,  y_spouse+space_name+2*nb_spouse+size_font), stroke='grey'))
-                dwg.add(dwg.line((x_individu,  y_individu+space_name+2*nb_spouse+size_font), (x_spouse,  y_spouse+space_name+2*nb_spouse+size_font), stroke='grey'))
+                print("spouse",real_spouse)
+                if real_spouse:
+                    link = Hyperlink(str(real_spouse.id), target='_top')
+                    link.add(dwg.text("".join(real_spouse.get_first_name(is_admin)), insert=(x_spouse, y_spouse), fill='black',text_anchor='middle',font_size=str(size_font-1)+"px"))
+                    link.add(dwg.text("".join(real_spouse.get_last_name(is_admin)), insert=(x_spouse, y_spouse+space_name), fill='black',text_anchor='middle', font_size=str(size_font) + "px"))
+                    dwg.add(link)
+                    dwg.add(dwg.line((x_individu, y_individu+space_name+size_font), (x_individu,  y_individu+space_name+2*nb_spouse+size_font), stroke='grey'))
+                    dwg.add(dwg.line((x_spouse, y_spouse+space_name+size_font), (x_spouse,  y_spouse+space_name+2*nb_spouse+size_font), stroke='grey'))
+                    dwg.add(dwg.line((x_individu,  y_individu+space_name+2*nb_spouse+size_font), (x_spouse,  y_spouse+space_name+2*nb_spouse+size_font), stroke='grey'))
                 for child in children:
                     
                     if child.parent1==real_spouse or child.parent2==real_spouse and ( is_admin or not child.child.private):
@@ -281,10 +293,17 @@ class Individual(models.Model):
                         dwg.add(link)
                         dwg.add(dwg.line((space_between_x*nb_child+space_between_x*(nb_spouse-1),  y_individu+space_between_y-size_font), (space_between_x*nb_child+space_between_x*(nb_spouse-1),  y_individu+space_between_y-2-size_font), stroke='grey'))
                         if nb_child_for_spouse>0:
+
                             dwg.add(dwg.line((space_between_x*nb_child+space_between_x*(nb_spouse-1),  y_individu+space_between_y-2-size_font), (space_between_x*(nb_child-1)+space_between_x*(nb_spouse-1),  y_individu+space_between_y-2-size_font), stroke='grey'))
+
                         nb_child_for_spouse+=1
                 if nb_child_for_spouse>0:
-                    dwg.add(dwg.line( ((x_spouse+x_individu)/2,  y_spouse+space_name+2*nb_spouse+size_font), (space_between_x*(nb_child-(nb_child_for_spouse-1)/2)+space_between_x*(nb_spouse-1),  y_individu+space_between_y-2-size_font), stroke='grey'))
+                    if real_spouse:
+                        dwg.add(dwg.line( ((x_spouse+x_individu)/2,  y_spouse+space_name+2*nb_spouse+size_font), (space_between_x*(nb_child-(nb_child_for_spouse-1)/2)+space_between_x*(nb_spouse-1),  y_individu+space_between_y-2-size_font), stroke='grey'))
+                    else:
+                        dwg.add(
+                            dwg.line((x_individu,  y_individu+space_name+2*nb_spouse+size_font), (space_between_x * (nb_child - (nb_child_for_spouse - 1) / 2) + space_between_x * (nb_spouse - 1), y_individu + space_between_y - 2 - size_font), stroke='grey'))
+
                         #dwg.add(dwg.line((x_individu, y_individu+10+size_font), (50*nb_child+40*(nb_spouse-1),  y_individu+30-size_font), stroke='blue'))
                         #dwg.add(dwg.line((x_spouse, y_spouse+10+size_font), (50*nb_child+40*(nb_spouse-1),  y_individu+30-size_font), stroke='red'))
         #dwg.add(dwg.line(start=(0, 0), end=(450, 400), stroke='blue'))
@@ -361,8 +380,8 @@ class Individual(models.Model):
 
 class Relationship(models.Model):
     gedcom_id = models.CharField(max_length=10,null=True)
-    parent1 = models.ForeignKey('Individual',null=True,related_name='person1',on_delete=models.CASCADE)
-    parent2 = models.ForeignKey('Individual',null=True,related_name='person2',on_delete=models.CASCADE)
+    parent1 = models.ForeignKey('Individual',null=True,related_name='person1',on_delete=models.SET_NULL)
+    parent2 = models.ForeignKey('Individual',null=True,related_name='person2',on_delete=models.SET_NULL)
     #children = models.ManyToManyField(Individual, related_name='children_set')
     date_of_marriage  = models.CharField(max_length=12,null=True, blank=True)
     place_of_marriage = models.ForeignKey(Location, related_name='place_of_marriage',null=True, blank=True, on_delete=models.SET_NULL)
@@ -377,11 +396,11 @@ class Relationship(models.Model):
 
     def __str__(self):
         if self.parent1 and self.parent2:
-            return self.gedcom_id + " " + self.parent1.first_name + " " + self.parent1.last_name + " " + self.parent2.first_name + " " + self.parent2.last_name
+            return  self.parent1.first_name + " " + self.parent1.last_name + " " + self.parent2.first_name + " " + self.parent2.last_name
         elif self.parent1:
-            return self.gedcom_id + " " + self.parent1.first_name + " " + self.parent1.last_name
+            return   self.parent1.first_name + " " + self.parent1.last_name
         elif self.parent2:
-            return self.gedcom_id + " " + self.parent2.first_name + " " + self.parent2.last_name
+            return  self.parent2.first_name + " " + self.parent2.last_name
 
     def nice_marriagedate(self):
             if self.date_of_marriage is not None:
@@ -396,7 +415,7 @@ class Child(models.Model):
     parent1 = models.ForeignKey('Individual',null=True,related_name='father', blank=True, on_delete=models.SET_NULL)
     parent2 = models.ForeignKey('Individual',null=True,related_name='mother', blank=True, on_delete=models.SET_NULL)
     class Meta:
-        ordering = ["parent1", "parent2"]
+        ordering = ["child"]
         verbose_name_plural = "Enfant"
 
     def __str__(self):
