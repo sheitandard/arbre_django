@@ -34,6 +34,7 @@ urlpatterns = [
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),
+    url('^individu/(?P<id>\d+)/remove_parents/(?P<id2>\d+)$', views.remove_parents, name='remove_parents'),
 	url('^individu/(?P<id>\d+)/add_parents/$', views.add_parents, name='add_parents'),
 	url('^individu/(?P<pk>\d+)/delete/$', views.IndividuDelete.as_view(), name='delete_individu'),
 	url('^lieu/(?P<pk>\d+)$', views.PlaceDetailView.as_view(), name='detail_lieu') ,

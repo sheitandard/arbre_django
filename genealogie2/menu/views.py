@@ -410,6 +410,41 @@ def update_parents(request, id=None):
                 "form":form,}
     return render(request, 'menu/individual_parent_update.html', context )
 
+def remove_parents(request, id=None, id2=None):
+    instance = get_object_or_404(Individual, id=id)
+    link = Child.objects.get(Q(child=id) & (Q(parent1=id2) | Q(parent2=id2)))
+
+
+    if link.parent1 is not None and link.parent1.id==int(id2):
+        print("here")
+        m = Modification(subject=instance, user=request.user, note="Suppression d'un lien de parenté avec " +link.parent1.first_name+" "+link.parent1.last_name)
+        link.parent1=None
+        m.save()
+    elif link.parent2 is not None and link.parent2.id==int(id2):
+        m = Modification(subject=instance, user=request.user, note="Suppression d'un lien de parenté avec " + link.parent2.first_name+" "+link.parent2.last_name)
+        link.parent2 = None
+        m.save()
+
+
+    if link.parent1 is None and link.parent2 is None:
+        m = Modification(subject=instance, user=request.user, note="Suppression des parents ")
+        m.save()
+        link.delete()
+    else:
+        link.save()
+    instance_child = get_object_or_404(Child, child=instance)
+    form = ParentForm(request.POST or None, instance=instance_child)
+    if form.is_valid():
+        instance_child = form.save(commit=False)
+        instance_child.save()
+        m = Modification(subject=instance, user=request.user, note="parents modifiés")
+        m.save()
+        return HttpResponseRedirect(instance.get_absolute_url())
+    context = {
+        "form": form, }
+    return render(request, 'menu/individual_parent_update.html', context)
+
+
 
 def update_place(request, id=None):
     instance=get_object_or_404(Location,id=id)

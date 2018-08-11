@@ -145,6 +145,7 @@ class ParentForm(ModelForm):
         model = Child
         fields = ["parent1",
                   "parent2",
+                  "child"
                 ]
         labels = {
             "parent1":"Parent 1",
