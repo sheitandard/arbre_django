@@ -273,7 +273,6 @@ class Individual(models.Model):
                 
                 x_spouse=x_individu+50*nb_spouse+50*nb_child
                 y_spouse=y_individu
-                print("spouse",real_spouse)
                 if real_spouse:
                     link = Hyperlink(str(real_spouse.id), target='_top')
                     link.add(dwg.text("".join(real_spouse.get_first_name(is_admin)), insert=(x_spouse, y_spouse), fill='black',text_anchor='middle',font_size=str(size_font-1)+"px"))

@@ -35,7 +35,10 @@ class IndividualListView(generic.ListView):
         query = self.request.GET.get('q')
         d=Individual.objects.all()
         current_user=self.request.user
-        if not is_current_user_admin(current_user):
+        if not current_user.is_authenticated:
+            index(query)
+
+        elif not is_current_user_admin(current_user):
             d=d.exclude(private=True)
 
         if query:
@@ -397,22 +400,56 @@ def update_individu(request, id=None):
 
 def update_parents(request, id=None):
     instance=get_object_or_404(Individual,id=id)
-    instance_child=get_object_or_404(Child,child=instance)
+    try :
+        instance_child=Child.objects.get(child=instance)
 
-    form=ParentForm(request.POST or None, instance=instance_child)
+    except  Child.DoesNotExist:
+        instance_child = Child(child=instance, parent1=None, parent2=None)
+    form = ParentForm(request.POST or None, instance=instance_child)
+    print("request.POST",request.POST,  )
     if form.is_valid():
         instance_child=form.save(commit=False)
         instance_child.save()
         m = Modification(subject=instance, user=request.user, note="parents modifiés")
         m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
+    elif len(request.POST)>0:
+        if request.POST["parent1"] != "":
+            father = get_object_or_404(Individual, id=int(request.POST["parent1"]))
+            m = Modification(subject=instance, user=request.user, note="un parent modifié : "+ str(father))
+            m.save()
+        else:
+            father  = None
+        if request.POST["parent2"] != "":
+            mother = get_object_or_404(Individual, id=int(request.POST["parent2"]))
+            m = Modification(subject=instance, user=request.user, note="un parent modifié :" + str(mother))
+            m.save()
+        else:
+            mother = None
+
+        instance_child.parent1=father
+        instance_child.parent2=mother
+        instance_child.save()
+        try:
+            new_relation=Relationship.objects.get(parent1=father, parent2=mother)
+        except Relationship.DoesNotExist:
+            new_relation =Relationship(parent1=father, parent2=mother)
+            m = Modification(subject=instance, user=request.user, note="nouvelle relation entre :" + str(father or "Unconnu") + " et " + str(mother or "Unconnue"))
+            m.save()
+            new_relation.save()
+
+
+
+
+
+
     context={
                 "form":form,}
     return render(request, 'menu/individual_parent_update.html', context )
 
 def remove_parents(request, id=None, id2=None):
     instance = get_object_or_404(Individual, id=id)
-    link = Child.objects.get(Q(child=id) & (Q(parent1=id2) | Q(parent2=id2)))
+    link = Child.objects.get(Q(child=id))
 
 
     if link.parent1 is not None and link.parent1.id==int(id2):
@@ -492,8 +529,14 @@ def add_parents(request, id=None):
     form1 = IndividualForm(None, instance=instance_child.parent1)
     form2 = IndividualForm(None,instance=instance_child.parent2)
 
-    father=None
-    mother=None
+    if instance_child.parent1 is None:
+        father=None
+    else :
+        father=instance_child.parent1
+    if instance_child.parent2 is None:
+        mother=None
+    else:
+        mother=instance_child.parent2
     errors = []
 
 
@@ -511,11 +554,11 @@ def add_parents(request, id=None):
 
                     mother.date_of_birth=transform_date(mother.date_of_birth)
                     mother.date_of_death = transform_date(mother.date_of_death)
-                    print(mother.date_of_birth)
+
                     mother.save()
                     m = Modification(subject=mother, user=request.user, note="ajout de la mère de "+instance.first_name + " "+instance.last_name)
                     m.save()
-                    print("mother", mother.id, mother.first_name)
+
                     instance_child.parent2=mother
                     #instance_child.save()
                 else:
@@ -527,7 +570,7 @@ def add_parents(request, id=None):
                     father.save()
                     m = Modification(subject=father, user=request.user, note="ajout du père de "+instance.first_name + " "+instance.last_name)
                     m.save()
-                    print("father", father.id, father.first_name)
+
                     instance_child.parent1=father
                     instance_child.save()
                     m = Modification(subject=instance, user=request.user, note="ajout d'une relation parent-enfant")
