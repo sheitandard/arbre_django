@@ -72,6 +72,8 @@ class IndividuDelete(DeleteView):
                                    +instance_child.parent2.first_name + " " + instance_child.parent2.last_name)
             instance_child.delete()
             m2.save()
+            self.object.user_who_last_updated = request.user
+            self.object.save()
         except Child.DoesNotExist:
             pass
 
@@ -91,6 +93,7 @@ class IndividuDelete(DeleteView):
                                                   note="Suppression des parents de " + enfant.child.first_name + " " + enfant.child.last_name )
                                 enfant.delete()
                                 m2.save()
+
                             m2 = Modification(subject=self.object, user=request.user,
                                               note="Suppression de la relation entre " + str(marriage.parent1 or "None") +" et " + str(marriage.parent2 or "None"))
                             marriage.delete()
@@ -101,6 +104,11 @@ class IndividuDelete(DeleteView):
                                           note="Suppression de la relation entre " + str( marriage.parent1 or "None") + " et " + str(marriage.parent2 or "None"))
                         marriage.delete()
                         m2.save()
+
+                    marriage.parent1.user_who_last_updated = request.user
+                    marriage.parent1.save()
+                    marriage.parent2.user_who_last_updated = request.user
+                    marriage.parent2.save()
 
 
 
@@ -387,6 +395,7 @@ def update_individu(request, id=None):
 
     if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
+        instance.user_who_last_updated = request.user
         instance.save()
         print(instance)
         m = Modification(subject=instance, user=request.user, note="modification des données personnelles de "+ instance.first_name + " " +instance.last_name)
@@ -429,6 +438,7 @@ def update_parents(request, id=None):
 
         instance_child.parent1=father
         instance_child.parent2=mother
+        instance_child.user_who_last_updated = request.user
         instance_child.save()
         try:
             new_relation=Relationship.objects.get(parent1=father, parent2=mother)
@@ -450,7 +460,8 @@ def update_parents(request, id=None):
 def remove_parents(request, id=None, id2=None):
     instance = get_object_or_404(Individual, id=id)
     link = Child.objects.get(Q(child=id))
-
+    instance.user_who_last_updated = request.user
+    instance.save()
 
     if link.parent1 is not None and link.parent1.id==int(id2):
         print("here")
@@ -554,7 +565,8 @@ def add_parents(request, id=None):
 
                     mother.date_of_birth=transform_date(mother.date_of_birth)
                     mother.date_of_death = transform_date(mother.date_of_death)
-
+                    mother.user_who_last_updated = request.user
+                    mother.user_who_created = request.user
                     mother.save()
                     m = Modification(subject=mother, user=request.user, note="ajout de la mère de "+instance.first_name + " "+instance.last_name)
                     m.save()
@@ -567,6 +579,8 @@ def add_parents(request, id=None):
                     father = form1.save(commit=False)
                     father.date_of_birth = transform_date(father.date_of_birth)
                     father.date_of_death = transform_date(father.date_of_death)
+                    father.user_who_last_updated = request.user
+                    father.user_who_created = request.user
                     father.save()
                     m = Modification(subject=father, user=request.user, note="ajout du père de "+instance.first_name + " "+instance.last_name)
                     m.save()

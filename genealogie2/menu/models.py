@@ -2,6 +2,7 @@ from django.db import models
 from datetime import date,datetime
 from django.db.models import Q
 import svgwrite
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.http import HttpResponse
@@ -111,6 +112,10 @@ class Individual(models.Model):
     occupation = models.CharField(max_length=100,null=True, blank=True)
     comment = models.TextField(null=True, blank=True)
     email = models.CharField(max_length=30,null=True, blank=True)
+    date_of_creation = models.DateTimeField(auto_now_add=True)
+    date_of_last_update = models.DateTimeField(auto_now=True)
+    user_who_created =  models.ForeignKey(User, default=1, related_name='user_who_created')
+    user_who_last_updated = models.ForeignKey(User, default=1, related_name='user_who_last_updated')
     #modif = GenericRelation(Modification)
     #family_as_parent = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_parent')
     #family_as_child = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_child')
