@@ -104,11 +104,12 @@ class IndividuDelete(DeleteView):
                                           note="Suppression de la relation entre " + str( marriage.parent1 or "None") + " et " + str(marriage.parent2 or "None"))
                         marriage.delete()
                         m2.save()
-
-                    marriage.parent1.user_who_last_updated = request.user
-                    marriage.parent1.save()
-                    marriage.parent2.user_who_last_updated = request.user
-                    marriage.parent2.save()
+                    if marriage.parent1 is not None:
+                        marriage.parent1.user_who_last_updated = request.user
+                        marriage.parent1.save()
+                    if marriage.parent2 is not None:
+                        marriage.parent2.user_who_last_updated = request.user
+                        marriage.parent2.save()
 
 
 

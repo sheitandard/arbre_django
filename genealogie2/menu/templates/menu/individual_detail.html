@@ -9,6 +9,8 @@
 
   <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
 
+  <p><h10> Créé le {{ individual.date_of_creation }} par {{ individual.user_who_created }} </h10>  </p>
+  <p><h10> Mis à jour le {{ individual.date_of_last_update }} par {{ individual.user_who_last_updated }} </h10>  </p>
 <table summary="detail_people" border="1" id="detail">
 <tr><td width="400px">
 
@@ -33,7 +35,7 @@
   <p><strong>Email:</strong>{% if individual.email is not none %} {{ individual.email }}{%endif %}</p> 
   <p><strong>Commentaire:</strong>{% if individual.comment is not none %} {{ individual.comment }}{%endif %}</p> 
   <p><a href="/individu/{{individual.id}}/update/">Modifier les données</a></p>
-    {% if request.user|has_group:"tree_admin" %}
+{% if request.user|has_group:"tree_admin" or request.user == individual.user_who_created  %}
   <p><a href="/individu/{{individual.id}}/delete/">Supprimer l'individu</a></p>
 
    {% endif %}
@@ -64,6 +66,7 @@
           <p><a href="/individu/{{individual.id}}/update_parents/">Modifier les parents</a></p>
             {% else %}
             <p><a href="/individu/{{individual.id}}/add_parents/">Ajouter les parents</a></p>
+         <p><a href="/individu/{{individual.id}}/update_parents/">Ajouter des parents déjà présents dans l'arbre</a></p>
             {% endif %}
 
  </ul>

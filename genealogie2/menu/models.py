@@ -272,7 +272,7 @@ class Individual(models.Model):
                 real_spouse=spouse.parent1
             else:
                 real_spouse=spouse.parent2
-            if is_admin or not real_spouse.private:
+            if is_admin or real_spouse is None or not real_spouse.private:
                 nb_spouse+=1
                 nb_child_for_spouse = 0
                 

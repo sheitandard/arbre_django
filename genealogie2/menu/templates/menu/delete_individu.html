@@ -8,8 +8,7 @@
   </head>-->
 
   <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
-
-{% if request.user|has_group:"tree_admin" %}
+{% if request.user|has_group:"tree_admin" or request.user == individual.user_who_created  %}
 <form method="post">{% csrf_token %}
     <p>Etes-vous sûr(e) de vouloir supprimer définitivement "{{ object }}" ?</p>
     <input type="submit" value="Confirmer">
