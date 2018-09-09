@@ -128,7 +128,16 @@ class Individual(models.Model):
         #from .views import is_current_user_admin
         #if self.date_of_birth:
         #    return self.first_name + " " + self.last_name + " " +  self.date_of_birth
-        return self.get_first_name() + " " + self.get_last_name()
+        if self.date_of_birth is None:
+            year_birth="?"
+        else:
+            year_birth=self.date_of_birth.split(" ")[-1]
+
+        if self.date_of_death is None:
+            year_death="?"
+        else:
+            year_death=self.date_of_death.split(" ")[-1]
+        return self.get_first_name() + " " + self.get_last_name() + " (" + year_birth + "-" + year_death + ")"
 
     def get_absolute_url(self):
         return "/individu/%i" % self.id

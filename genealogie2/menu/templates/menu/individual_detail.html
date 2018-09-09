@@ -74,13 +74,15 @@
 
 
   <div class="tree">
-    <ul>{% if individual.get_spouses %} Relations:
+
+    <ul>{% if individual.get_spouses %} Relations :
 
             <!--<a href="/individu/{{individu.id}}">{{ individual.last_name }} {{ individual.first_name }}</a>-->
                <li>
                             {% for spouses_obj in individual.get_spouses %}
+                                <ul>
                               {% if not spouses_obj.parent1.private and not spouses_obj.parent2.private or request.user|has_group:"tree_admin"  %}
-                                    <a href="/individu/{{spouses_obj.parent1.id}}">{{ spouses_obj.parent1 }} </a> et <a href="/individu/{{spouses_obj.parent2.id}}">{{ spouses_obj.parent2 }} </a> 
+                                    <a href="/individu/{{spouses_obj.parent1.id}}">{{ spouses_obj.parent1 }} </a> et <a href="/individu/{{spouses_obj.parent2.id}}">{{ spouses_obj.parent2 }}   (<a href="/individu/{{spouses_obj.id}}/update_relation/">modifier la relation (id={{spouses_obj.id}})</a>) </a>
                                     {% if spouses_obj.date_of_marriage is not none %} mariés le {{ spouses_obj.nice_marriagedate}} {% endif %} 
                                     {% if spouses_obj.place_of_marriage is not none %} à {{ spouses_obj.place_of_marriage}}{% endif %} 
                                     {% if individual.get_children  %}
@@ -99,9 +101,11 @@
                                         </ul>
                                     {% endif %} 
                                 {% endif %}
+                                    </ul>
                             {% endfor %}
         </li>
     {% endif %}</ul>
+      <ul> <a href="/individu/{{individual.id}}/add_relation/">Ajouter un(e) partenaire</a></ul>
 </div>
 
 

@@ -72,8 +72,7 @@ class IndividuDelete(DeleteView):
                                    +instance_child.parent2.first_name + " " + instance_child.parent2.last_name)
             instance_child.delete()
             m2.save()
-            self.object.user_who_last_updated = request.user
-            self.object.save()
+
         except Child.DoesNotExist:
             pass
 
@@ -416,7 +415,7 @@ def update_parents(request, id=None):
     except  Child.DoesNotExist:
         instance_child = Child(child=instance, parent1=None, parent2=None)
     form = ParentForm(request.POST or None, instance=instance_child)
-    print("request.POST",request.POST,  )
+    print("request.POST",request.POST)
     if form.is_valid():
         instance_child=form.save(commit=False)
         instance_child.save()
@@ -448,10 +447,6 @@ def update_parents(request, id=None):
             m = Modification(subject=instance, user=request.user, note="nouvelle relation entre :" + str(father or "Unconnu") + " et " + str(mother or "Unconnue"))
             m.save()
             new_relation.save()
-
-
-
-
 
 
     context={
@@ -610,7 +605,153 @@ def add_parents(request, id=None):
                 }
     return render(request, 'menu/individual_parent_add.html', context )
 
+def add_relationship(request, id=None):
+    print("add_relation")
+    instance=get_object_or_404(Individual,id=id)
+    if instance.gender == 'M':
+        relation=Relationship(parent1=instance)
+    else:
+        relation = Relationship(parent2=instance)
 
+    form = RelationshipForm(None, instance=relation)
+    if 'save' in request.POST:
+            print(request.POST)
+            request_post=get_first_query(request.POST)
+            if instance.gender == 'M':
+                request_post["parent1"]=id
+            else:
+                request_post["parent2"] = id
+            print(request_post)
+            form = RelationshipForm(request_post or None)
+            if form.is_valid():
+                print("form is valid")
+                form.clean()
+
+                relation = form.save(commit=False)
+
+                instance.user_who_last_updated = request.user
+                instance.save()
+                relation.save()
+                print(relation)
+                m = Modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire existant pour "+instance.first_name + " "+instance.last_name)
+                m.save()
+
+
+            return HttpResponseRedirect(instance.get_absolute_url())
+    context={
+                "form":form
+                }
+    return render(request, 'menu/individual_relation_add.html', context )
+
+
+def add_partner(request, id=None):
+    print("add_partner")
+    print(request.POST)
+    instance = get_object_or_404(Individual, id=id)
+    form = IndividualForm(None)
+    if 'save' in request.POST:
+
+            form = IndividualForm(request.POST or None)
+            if form.is_valid() :
+                form.clean()
+                new_partner = form.save(commit=False)
+                new_partner.user_who_last_updated = request.user
+                new_partner.user_who_created = request.user
+                new_partner.save()
+                m = Modification(subject=new_partner, user=request.user,
+                                 note="ajout d'un nouvel individu " + new_partner.first_name + " " + new_partner.last_name)
+                m.save()
+                instance.user_who_last_updated = request.user
+                instance.save()
+                if instance.gender=='M':
+                    relation = Relationship(parent1=instance, parent2=new_partner)
+                else:
+                    relation = Relationship(parent2=instance, parent1=new_partner)
+                m = Modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire pour "+instance.first_name + " "+instance.last_name)
+                m.save()
+
+            return HttpResponseRedirect(instance.get_absolute_url()+"/add_relation")
+    context={
+                "form":form
+                }
+    return render(request, 'menu/individual_partner_add.html', context )
+
+def update_relation(request, id=None):
+    print("update_relation")
+    relation = get_object_or_404(Relationship, id=id)
+    form = RelationshipForm(request.POST or None, instance=relation)
+    if 'save' in request.POST:
+        print(request.POST)
+        if form.is_valid():
+            print("form is valid")
+            form.clean()
+
+            relation = form.save(commit=False)
+            relation.save()
+            if relation.parent1 is not None:
+
+                relation.parent1.user_who_last_updated = request.user
+                relation.parent1.save()
+                m = Modification(subject=relation.parent1, user=request.user,
+                                 note="modification d'un(e) relation pour " + relation.parent1.first_name + " " + relation.parent1.last_name)
+                m.save()
+            if relation.parent2 is not None:
+                relation.parent2.user_who_last_updated = request.user
+                relation.parent2.save()
+                m = Modification(subject=relation.parent2, user=request.user,
+                                 note="modification d'un(e) relation pour " + relation.parent2.first_name + " " + relation.parent2.last_name)
+                m.save()
+
+
+
+        return HttpResponseRedirect(relation.parent1.get_absolute_url())
+    context = {
+        "form": form
+    }
+    return render(request, 'menu/individual_relation_update.html', context)
+
+class RelationDelete(DeleteView):
+    model = Relationship
+    success_url = reverse_lazy('Liste des modifications')
+    template_name = 'menu/delete_relation.html'
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        print(self.object)
+
+        try:
+            if self.object.parent1 is not None:
+                subject_modif=self.object.parent1
+                self.object.parent1.user_who_last_updated = request.user
+                self.object.parent1.save()
+            if self.object.parent2 is not None:
+                subject_modif = self.object.parent2
+                self.object.parent2.user_who_last_updated = request.user
+                self.object.parent2.save()
+            m2 = Modification(subject=subject_modif, user=request.user,
+                              note="Suppression de la relation entre " + str(self.object.parent1 or "None") + " et " + str(self.object.parent2 or "None"))
+
+
+            m2.save()
+
+            try:
+                children = Child.objects.get(parent1=self.object.parent1, parent2=self.object.parent2)
+                for child in children:
+                    m2 = Modification(subject=subject_modif, user=request.user,
+                                      note="Suppression de la relation parent-enfant entre " + str(self.object.parent1 or "None") + " - " + str(self.object.parent2 or "None") + " et " + str(child or "None"))
+
+                    m2.save()
+                    child.delete()
+
+            except Child.DoesNotExist:
+                pass
+                self.object.delete()
+        except Relationship.DoesNotExist:
+            pass
+
+            self.object.delete()
+
+        return HttpResponseRedirect(self.get_success_url())
 
 
 def add_location_html(request):

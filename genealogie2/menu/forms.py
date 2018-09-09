@@ -118,6 +118,7 @@ class RelationshipForm(ModelForm):
                 "parent2",
                 "status",
                 "date_of_marriage",
+                  "place_of_marriage",
                 "date_of_divorce"]
         labels = {
             "parent1":"1ère personne",

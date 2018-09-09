@@ -1,0 +1,24 @@
+{% extends "menu/header.html" %}
+{% block content %}
+{% load static %}
+{% load has_group %}
+<!--
+<head>
+    <script type="text/javascript" src="https://github.com/ariutta/svg-pan-zoom/blob/master/dist/svg-pan-zoom.js"></script>
+  </head>-->
+
+  <h1>Relation entre {{ relationship.parent1.first_name }} {{ relationship.parent1.last_name }} et {{ relationship.parent2.first_name }} {{ relationship.parent2.last_name }}</h1>
+
+<form method="post">{% csrf_token %}
+    <p>Attention, les liens avec les enfants issus de cette relation seront également supprimés!</p>
+    <p>Etes-vous sûr(e) de vouloir supprimer définitivement cette relation ?</p>
+    <input type="submit" value="Confirmer">
+</form>
+
+
+
+  </div>
+  {% include 'menu/includes/htmlsnippet.html' %}
+
+
+{% endblock %}

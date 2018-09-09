@@ -1,0 +1,74 @@
+{% extends "menu/header.html" %}
+{% block content %}
+{% load has_group %}
+{% load startswith %}
+<head>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" >
+    function update_dropdown(dropdown,json){
+        dropdown.empty();
+        dropdown.append($('<option value="" >---------</option>'))
+        $.each(json.places, function(index,entry){
+
+            dropdown.append($('<option></option>').attr('value', entry.id).text(entry.city.concat(", ",entry.department, ", ",entry.country,", ",entry.church)))
+            })
+    }
+    function reload_places(){
+         $.ajax({
+            url:"place_list",
+            data:{},
+            type:"GET",
+            dataType:"json",
+            })
+
+         .done(function(json){
+
+           update_dropdown($("#form_place_of_marriage select"), json);
+
+                    })
+         .fail(function(){
+                alert("Error!");
+               });
+    }
+
+    </script>
+</head>
+
+
+<body>
+
+ <button  onclick="reload_places();">Rafraichir</button>
+
+  <table>
+    <td>
+
+        <form method='POST' action=''>{% csrf_token %}
+            Relation :
+        {% for field in form %}
+                <div class="fieldWrapper">
+                    <p>{{ field.errors }}</p>
+
+
+                    {% if field.name|startswith:'parent' and field.value is None%}
+                    <p id="form_{{field.name}}"> {{ field.label_tag }} {{ field }} </p>
+                    <a href="menu/add_partner/" >Ajouter un(e) partenaire</a>
+
+                    {% elif field.name|startswith:'place' %}
+                    <p id="form_{{field.name}}"> {{ field.label_tag }} {{ field }} </p>
+                    <a href="menu/add_location" target="_blank">Ajouter un lieu</a>
+                    {% else %}
+                     <p id="form_{{field.name}}"> {{ field.label_tag }} {{ field }} </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <input type='submit' value='Enregistrer' name="save"/>
+        </form>
+ <p><a href="/individu/{{form.instance.id}}/delete_relation/">Supprimer la relation</a></p>
+         </td>
+
+  </table>
+
+</body>
+
+{% endblock %}
