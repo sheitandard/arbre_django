@@ -369,10 +369,12 @@ class Individual(models.Model):
                 death_month=month_list.index(death[1])+1
                 death_year=int(death[2])
             death_datetime=date(death_year,death_month,death_day)
-            #print(death_datetime)
+            #print("death_time",death_datetime)
 
             if self.date_of_birth is not None:
                 num_years = int((death_datetime - birth_datetime).days / 365.2425)
+            else:
+                return "inconnu"
                 #print(num_years)
         elif not self.is_deceased and self.date_of_birth:
             today = date.today()

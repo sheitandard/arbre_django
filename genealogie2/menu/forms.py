@@ -132,14 +132,11 @@ class RelationshipForm(ModelForm):
 class ChildForm(ModelForm):
     class Meta:
         model = Child
-        fields = ["parent1",
-                  "parent2",
+        fields = [
                   "child"
                 ]
         labels = {
-            "child":"Enfant",
-            "parent1":"Parent 1",
-            "parent2":"Parent 2"}
+            "child":"Enfant",}
 
 class ParentForm(ModelForm):
     class Meta:

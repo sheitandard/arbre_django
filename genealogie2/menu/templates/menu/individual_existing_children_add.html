@@ -1,0 +1,35 @@
+{% extends "menu/header.html" %}
+{% block content %}
+{% load has_group %}
+{% load startswith %}
+
+
+<body>
+
+
+  <table>
+      <p> Ajouter un enfant pour {{ form.instance.parent1.first_name }} {{ form.instance.parent1.last_name }} et {{ form.instance.parent2.first_name }} {{ form.instance.parent2.last_name }} </p>
+    <p> {{ message_error }} </p>
+
+      <td>
+
+        <form method='POST' action=''>{% csrf_token %}
+            Relation :
+        {% for field in form %}
+                <div class="fieldWrapper">
+                    <p>{{ field.errors }}</p>
+                     <p id="form_{{field.name}}"> {{ field.label_tag }} {{ field }} </p>
+
+                </div>
+            {% endfor %}
+
+            <input type='submit' value='Enregistrer' name="save"/>
+        </form>
+
+         </td>
+
+  </table>
+
+</body>
+
+{% endblock %}
