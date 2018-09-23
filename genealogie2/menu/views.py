@@ -3,8 +3,7 @@ from .forms import ReadFileForm, IndividualForm, RelationshipForm, ChildForm, Pa
 from django.shortcuts import get_object_or_404
 from django.forms import inlineformset_factory
 from django.urls import reverse_lazy
-
-
+import os
 from datetime import datetime
 from django.db import models
 from .models import Location, Individual, Relationship, Child, month_list, Modification
@@ -20,7 +19,7 @@ from django.views.generic.edit import UpdateView, FormView, DeleteView
 from django.views.generic import TemplateView
 from django.contrib import messages
 
-
+from django.core.files import File
 
 
 pays_connus = ["FRANCE","POLOGNE","ALLEMAGNE","ALGERIE", "ITALIE","ESPAGNE","ROYAUNE-UNI", "ANGLETERRE"]
@@ -390,14 +389,16 @@ def import_gedcom(request):
 
 def update_individu(request, id=None):
     instance=get_object_or_404(Individual,id=id)
-    print(instance)
-    form=IndividualForm(request.POST or None, instance=instance)
+    #print(instance)
+    form=IndividualForm(request.POST or None, request.FILES or None,instance=instance)
 
     if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
         instance.user_who_last_updated = request.user
+
+
         instance.save()
-        print(instance)
+        #print(instance)
         m = Modification(subject=instance, user=request.user, note="modification des données personnelles de "+ instance.first_name + " " +instance.last_name)
         m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
@@ -685,7 +686,7 @@ def add_partner(request, id=None):
 def update_relation(request, id=None):
     print("update_relation")
     relation = get_object_or_404(Relationship, id=id)
-    form = RelationshipForm(request.POST or None, instance=relation)
+    form = RelationshipForm(request.POST or None, request.FILES or None,instance=relation)
     if 'save' in request.POST:
         print(request.POST)
         if form.is_valid():
@@ -854,3 +855,104 @@ def place_list(request):
     p2=list(p.values('id','city','department','country','church'))
     return JsonResponse({"places":p2})
 
+def import_sources(request):
+    paths=[]
+    paths.append("C:/Users/sheitan/Documents/genealogie/Tama")
+    paths.append("C:/Users/sheitan/Documents/genealogie/Rigot")
+    paths.append("C:/Users/sheitan/Documents/genealogie/Charrayre")
+    paths.append("C:/Users/sheitan/Documents/genealogie/Dard")
+    paths.append("C:/Users/sheitan/Documents/genealogie/Voye/send")
+    paths.append("C:/Users/sheitan/Documents/genealogie/dans genoom")
+    paths.append("C:/Users/sheitan/Documents/genealogie/cabanel")
+    mariage_all = Relationship.objects.all()
+    nb_mariage_success = 0
+    nb_mariage_fail = 1
+    for path in paths:
+        print(path)
+        list_files = os.listdir(path)
+        for file in list_files:
+            if file.endswith(".jpg") or file.endswith(".png"):
+                element = file.split(".")[0].split(" ")
+                #try:
+                #    print(file)
+                #except UnicodeEncodeError:
+                #    pass
+                type = "naissance"
+                if "mariage" in file:
+                    type = "mariage"
+                elif "deces" in file:
+                    type="deces"
+                #print(type)
+
+                if type == "mariage":
+
+                    names=["","","",""]
+                    eli = len(names)-1
+                    for el in range(len(element)-1,-1,-1):
+
+
+                        if element[el] not in ("de","et","mariage","avec"):
+                            if names[eli]!="" :
+                                names[eli]=names[eli]+" "
+                            names[eli]=names[eli]+element[el].split("'")[-1]
+                        if eli==1 or eli==3 or element[el] in ("et","avec"):
+                            eli=eli-1
+
+                    firstname1,lastname1,firstname2,lastname2=names
+                    #try:
+                    #    print(names)
+                    #except:
+                    #    print("weird name")
+
+                    try:
+
+                        mariage=mariage_all.filter(parent1__in=Individual.objects.filter(Q(last_name__icontains=lastname1)))
+                        if len(mariage) > 1:
+                            mariage = mariage.filter(parent2__in= Individual.objects.filter(Q(last_name__icontains=lastname2)))
+                        if len(mariage)>1:
+                            mariage = mariage.filter(parent1__in=Individual.objects.filter(Q(first_name__icontains=firstname1.split(" ")[-1])))
+
+                        if len(mariage) > 1:
+                            mariage = mariage.filter(parent2__in= Individual.objects.filter( Q(first_name__icontains=firstname2.split(" ")[-1])))
+                        if len(mariage)==0:
+                            mariage = mariage_all.filter(
+                                parent1__in=Individual.objects.filter(Q(last_name__icontains=lastname2)))
+                            if len(mariage) > 1:
+                                mariage = mariage.filter(
+                                    parent2__in=Individual.objects.filter(Q(last_name__icontains=lastname1)))
+                            if len(mariage) > 1:
+                                mariage = mariage.filter(parent1__in=Individual.objects.filter(
+                                    Q(first_name__icontains=firstname2.split(" ")[-1])))
+
+                            if len(mariage) > 1:
+                                mariage = mariage.filter(
+                                    parent2__in=Individual.objects.filter(Q(first_name__icontains=firstname1.split(" ")[-1])))
+                    except Relationship.DoesNotExist:
+                        print("no mariage")
+
+                    #print(len(mariage))
+                    if len(mariage)!=1:
+                        print("echec mariage")
+                        nb_mariage_fail=nb_mariage_fail+1
+                        print(path)
+                        try:
+                            print(file)
+                        except UnicodeEncodeError:
+                            pass
+                    else:
+                        file_name=os.path.basename(file)
+                        #print("old_source", mariage[0].marriage_source)
+                        if mariage[0].marriage_source.name is None:
+                            nb_mariage_success=nb_mariage_success+1
+                            full_path=path+"/"+file
+                            with open(full_path, 'rb') as f:
+                                print("replacing file now")
+                                django_file=File(f)
+                                mariage[0].marriage_source.save(file_name, django_file, save=True)
+
+
+
+    print("sucess mariage",nb_mariage_success )
+    print("fail mariage",nb_mariage_fail )
+
+    return 0

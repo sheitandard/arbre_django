@@ -42,7 +42,7 @@
   <table>
     <td>
 
-        <form method='POST' action=''>{% csrf_token %}
+        <form method='POST' action='' enctype="multipart/form-data">{% csrf_token %}
             Relation :
         {% for field in form %}
                 <div class="fieldWrapper">

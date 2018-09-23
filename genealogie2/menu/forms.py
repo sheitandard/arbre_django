@@ -61,6 +61,8 @@ class IndividualForm(ModelForm):
                 "date_of_death",
                 "place_of_death",
                 "place_of_residence",
+                "birth_source",
+                  "death_source",
                 "occupation",
                 "email",
                 "comment"
@@ -74,7 +76,8 @@ class IndividualForm(ModelForm):
                 "image":"Image",
                 "date_of_birth":"Date de naissance",
                 "place_of_birth":"Lieu de naissance",
-
+                "birth_source":"Certificat de naissance",
+                 "death_source":"Certificat de décès",
                 "date_of_death":"Date du décès",
                 "place_of_death": "Lieu du décès",
                 "place_of_residence":"Lieu de résidence",
@@ -119,14 +122,22 @@ class RelationshipForm(ModelForm):
                 "status",
                 "date_of_marriage",
                   "place_of_marriage",
-                "date_of_divorce"]
+                "date_of_divorce",
+                  "marriage_source",
+                  "divorce_source"]
         labels = {
             "parent1":"1ère personne",
             "parent2":"2e personne",
             "status":"Status",
             "date_of_marriage":"Date de mariage",
             "place_of_marriage":"lieu du mariage",
-            "date_of_divorce":"date du divorce"}
+            "date_of_divorce":"date du divorce",
+            "marriage_source":"Certificat de mariage",
+            "divorce_source":"Certificat de divorce"
+        }
+
+
+
 
 
 class ChildForm(ModelForm):
@@ -148,6 +159,9 @@ class ParentForm(ModelForm):
         labels = {
             "parent1":"Parent 1",
             "parent2":"Parent 2"}
+
+
+
 
 
 #IndividualFormSet = inlineformset_factory(Individual,Relationship ,form=RelationshipForm, fk_name='parent1')

@@ -31,6 +31,7 @@ urlpatterns = [
 	url('import_gedcom/', views.import_gedcom, name='import_gedcom'),
 	url('list_modification/',views.ModificationListView.as_view(), name='Liste des modifications'),
 	url('list_places/$',views.PlaceListView.as_view(), name='Liste des lieux'),
+	url('import_sources/$', views.import_sources, name='Importer des sources'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),

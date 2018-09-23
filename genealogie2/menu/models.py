@@ -101,9 +101,7 @@ class Individual(models.Model):
     last_name = models.CharField(max_length=30,null=False, blank=True,default="?")
     gender = models.CharField( max_length=1, choices=GENDER_CHOICES,null=True, blank=True)
     is_deceased=models.BooleanField(default=False)
-    image = models.ImageField("image",
-                              upload_to='uploads/img',
-                              null=True, blank=True)
+    image = models.ImageField("image",upload_to='uploads/img',null=True, blank=True)
     date_of_birth  =  models.CharField(max_length=12,null=True, blank=True)
     date_of_death  =  models.CharField(max_length=12,null=True, blank=True)
     place_of_birth = models.ForeignKey(Location,null=True, related_name='place_of_birth', blank=True, on_delete=models.SET_NULL)
@@ -116,6 +114,8 @@ class Individual(models.Model):
     date_of_last_update = models.DateTimeField(auto_now=True)
     user_who_created =  models.ForeignKey(User, default=1, related_name='user_who_created')
     user_who_last_updated = models.ForeignKey(User, default=1, related_name='user_who_last_updated')
+    birth_source=models.FileField(upload_to='uploads/src',null=True, blank=True)
+    death_source = models.FileField(upload_to='uploads/src', null=True, blank=True)
     #modif = GenericRelation(Modification)
     #family_as_parent = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_parent')
     #family_as_child = models.ForeignKey('Family', on_delete=models.PROTECT,null=True, related_name='family_as_child')
@@ -403,6 +403,8 @@ class Relationship(models.Model):
     date_of_divorce  = models.CharField(max_length=12,null=True, blank=True)
     #place_of_divorce = models.ForeignKey(Location, related_name='place_of_divorce')
     status =  models.CharField( max_length=16, choices=STATUS_CHOICES)
+    marriage_source = models.FileField(upload_to='uploads/src', null=True, blank=True)
+    divorce_source = models.FileField(upload_to='uploads/src', null=True, blank=True)
     class Meta:
         ordering = ["parent1", "parent2"]
         #ordering = ["gedcom_id"]
