@@ -45,13 +45,13 @@
   {% if individual.image %}
     <img src="{{ individual.image.url }}" alt="{{ individual.last_name }} {{ individual.first_name }}" width="300" />
   {% endif %}
-
+</td><td>
     {% if individual.birth_source %}
-    <img src="{{ individual.birth_source.url }}" " width="300" />
-
+    <img src="{{ individual.birth_source.url }}"  width="300" />
   {% endif %}
+    </td><td>
         {% if individual.death_source %}
-    <img src="{{ individual.death_source.url }}" " width="300" />
+    <img src="{{ individual.death_source.url }}"  width="300" />
 
   {% endif %}
   </td></tr>

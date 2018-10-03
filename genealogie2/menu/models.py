@@ -371,7 +371,7 @@ class Individual(models.Model):
             death_datetime=date(death_year,death_month,death_day)
             #print("death_time",death_datetime)
 
-            if self.date_of_birth is not None:
+            if self.date_of_birth is not None and self.date_of_birth!="":
                 num_years = int((death_datetime - birth_datetime).days / 365.2425)
             else:
                 return "inconnu"

@@ -865,8 +865,15 @@ def import_sources(request):
     paths.append("C:/Users/sheitan/Documents/genealogie/dans genoom")
     paths.append("C:/Users/sheitan/Documents/genealogie/cabanel")
     mariage_all = Relationship.objects.all()
+    individual_all=Individual.objects.all()
     nb_mariage_success = 0
-    nb_mariage_fail = 1
+    nb_mariage_fail = 0
+    nb_deces_fail = 0
+    nb_deces_success = 0
+    nb_deces = 0
+    nb_naissance=0
+    nb_naissance_success = 0
+    nb_naissance_fail = 0
     for path in paths:
         print(path)
         list_files = os.listdir(path)
@@ -878,13 +885,13 @@ def import_sources(request):
                 #except UnicodeEncodeError:
                 #    pass
                 type = "naissance"
-                if "mariage" in file:
+                if "mariage" in file or "Mariage" in file:
                     type = "mariage"
-                elif "deces" in file:
+                elif ("deces" or "décès") in file and "naissance" not in file:
                     type="deces"
-                #print(type)
+                #print("type", type)
 
-                if type == "mariage":
+                if 0:#type == "mariage":
 
                     names=["","","",""]
                     eli = len(names)-1
@@ -949,7 +956,129 @@ def import_sources(request):
                                 print("replacing file now")
                                 django_file=File(f)
                                 mariage[0].marriage_source.save(file_name, django_file, save=True)
+                elif 0:#type=="deces":
+                    nb_deces=nb_deces+1
+                    lastname=element[0]
+                    firstname=element[1].split(",")[0]
+                    i=2
+                    year_birth=None
+                    year_death=None
+                    #print(len(element),i)
+                    while i<len(element):
+                        if "deces" not in element[i] and "décès" not in element[i]:
+                            if "1" not in element[i]:
+                                firstname=firstname+" "+element[i].split(",")[0]
+                            elif "-" in element[i]:
+                                year_birth=element[i].split("-")[0]
+                                year_death=element[i].split("-")[1].split(",")[0]
+                            else:
+                                year_birth = element[i].split(",")[0]
+                        i=i+1
+                    individu = individual_all.filter(Q(first_name__icontains=firstname) & Q(last_name__icontains=lastname))
+                    if year_birth:
+                        individu = individu.filter(Q(date_of_birth__icontains=year_birth))
+                    if year_death:
+                        individu = individu.filter(Q(date_of_death__icontains=year_death))
+                    else:
+                        individu = individu.filter(Q(date_of_death__isnull=False))
+                    if len(individu)>1:
+                        individu = individu.filter( Q(first_name=firstname))
 
+
+                    if len(individu) != 1:
+                        print("echec pour trouver deces")
+                        nb_deces_fail=nb_deces_fail+1
+                        try:
+                            print(firstname, lastname)
+                            print(file)
+                        except:
+                            print("weird name")
+                        #print(year_birth, year_death)
+
+                    elif individu[0].death_source.name is None:
+                        nb_deces_success = nb_deces_success + 1
+                        full_path = path + "/" + file
+                        file_name = os.path.basename(file)
+                        with open(full_path, 'rb') as f:
+                            print("replacing file now")
+                            django_file = File(f)
+                            individu[0].death_source.save(file_name, django_file, save=True)
+                    #else:
+                    #    print("y'a déjà un fichier pour le décès")
+
+                elif type=="naissance":
+                    nb_naissance = nb_naissance + 1
+                    lastname = element[0]
+                    firstname = element[1].split(".")[0]
+                    #try:
+                    #    print("new file")
+                    #    print(firstname, lastname)
+                    #    print(file)
+                    #except:
+                    #    pass
+
+
+                    i = 2
+                    year_birth = None
+                    year_death = None
+                    # print(len(element),i)
+                    while i < len(element):
+                            if "naissance" in element[i]:
+                                break
+                            elif "1" not in element[i]:
+                                firstname = firstname + " " + element[i].split(".")[0]
+                            elif "-" in element[i]:
+                                year_birth = element[i].split("-")[0]
+                                year_death = element[i].split("-")[1].split(".")[0]
+                            else:
+                                year_birth = element[i].split(".")[0]
+                            i = i + 1
+                    individu = individual_all.filter( Q(last_name__icontains=lastname))
+                    first_name_split=firstname.split(" ")
+
+                    for name in first_name_split:
+                        if len(individu)>1:
+                            individu = individu.filter(Q(first_name__icontains=name))
+                    if year_birth:
+                        individu = individu.filter(Q(date_of_birth__icontains=year_birth))
+                    else:
+                        individu = individu.filter(Q(date_of_birth__isnull=False))
+                    if year_death:
+                        individu = individu.filter(Q(date_of_death__icontains=year_death))
+
+                    if len(individu) > 1:
+                        individu = individu.filter(Q(first_name=firstname))
+
+
+                    if len(individu) != 1:
+                        print("echec pour trouver naissance")
+                        nb_naissance_fail = nb_naissance_fail + 1
+                        try:
+                            print(firstname, lastname)
+                            print(file)
+                        except:
+                            print("weird name")
+                        print(year_birth, year_death)
+
+                    elif individu[0].birth_source.name is None:
+                        nb_naissance_success = nb_naissance_success + 1
+                        full_path = path + "/" + file
+                        file_name = os.path.basename(file)
+                        #with open(full_path, 'rb') as f:
+                        #    print("replacing file now")
+                        #    django_file = File(f)
+                        #    individu[0].birth_source.save(file_name, django_file, save=True)
+                    else:
+                        nb_naissance_fail = nb_naissance_fail + 1
+                        #print("y'a déjà un fichier pour la naissance!")
+
+    print("nb naissance",nb_naissance )
+    print("sucess naissance",nb_naissance_success )
+    print("fail naissance",nb_naissance_fail )
+
+    print("nb deces",nb_deces )
+    print("sucess deces",nb_deces_success )
+    print("fail deces",nb_deces_fail )
 
 
     print("sucess mariage",nb_mariage_success )
