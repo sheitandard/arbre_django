@@ -152,16 +152,11 @@ class ChildForm(ModelForm):
 class ParentForm(ModelForm):
     class Meta:
         model = Child
-        fields = ["parent1",
-                  "parent2",
+        fields = ["relation",
                   "child"
                 ]
         labels = {
-            "parent1":"Parent 1",
-            "parent2":"Parent 2"}
+            "relation":"Couple"}
 
 
 
-
-
-#IndividualFormSet = inlineformset_factory(Individual,Relationship ,form=RelationshipForm, fk_name='parent1')

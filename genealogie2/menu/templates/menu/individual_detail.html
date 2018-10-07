@@ -62,12 +62,12 @@
     <ul>{% if individual.get_parents %} Parents:
       {% for parent in individual.get_parents %}  
           <li>
-              {% if not parent.parent1.private or request.user|has_group:"tree_admin" %} 
-              <a href="/individu/{{parent.parent1.id}}">  {{parent.parent1}}</a>{% endif %} 
+              {% if not parent.relation.parent1.private or request.user|has_group:"tree_admin" %}
+              <a href="/individu/{{parent.relation.parent1.id}}">  {{parent.relation.parent1}}</a>{% endif %}
            </li>
             <li>
-             {% if not parent.parent2.private or request.user|has_group:"tree_admin" %} 
-              <a href="/individu/{{parent.parent2.id}}">  {{parent.parent2}}</a>{% endif %} 
+             {% if not parent.relation.parent2.private or request.user|has_group:"tree_admin" %}
+              <a href="/individu/{{parent.relation.parent2.id}}">  {{parent.relation.parent2}}</a>{% endif %}
            </li>
            {% endfor %}
           <p><a href="/individu/{{individual.id}}/update_parents/">Modifier les parents</a></p>
@@ -99,7 +99,7 @@
                                                 <ul>
                                                     {% for child_obj in individual.get_children %}
                                                         {% if not child_obj.child.private  or request.user|has_group:"tree_admin" %}
-                                                          {% if child_obj.parent1 == spouses_obj.parent1 and child_obj.parent2 == spouses_obj.parent2 %}
+                                                          {% if child_obj.relation.parent1 == spouses_obj.parent1 and child_obj.relation.parent2 == spouses_obj.parent2 %}
                                                               <li>
                                                                 <a href="/individu/{{child_obj.child.id}}">  {{child_obj.child}}</a>
 

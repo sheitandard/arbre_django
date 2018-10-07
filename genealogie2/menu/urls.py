@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.views.generic import ListView, DetailView
 from menu.models import Individual
-from . import views
+from . import views, function
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -31,7 +31,8 @@ urlpatterns = [
 	url('import_gedcom/', views.import_gedcom, name='import_gedcom'),
 	url('list_modification/',views.ModificationListView.as_view(), name='Liste des modifications'),
 	url('list_places/$',views.PlaceListView.as_view(), name='Liste des lieux'),
-	url('import_sources/$', views.import_sources, name='Importer des sources'),
+#	url('import_sources/$', views.import_sources, name='Importer des sources'),
+    url('update_child_class/$', function.update_child, name='Update Child Class'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),

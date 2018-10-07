@@ -186,14 +186,29 @@ class Individual(models.Model):
 
     def get_children(self):
         #from .views import is_current_user_admin
+        children=None
+
         try:
-            children = Child.objects.filter(Q(parent1=self) | Q(parent2=self))
-            #if not is_current_user_admin():
-            #     children=children.exclude(parent1__private='t').exclude(parent2__private='t')
-            return children
-        except Child.DoesNotExist:
-            #print("Pas de relations connues",self)
-            return []
+            mariage=Relationship.objects.filter(Q(parent1=self) | Q(parent2=self))
+            for m in mariage:
+                try:
+                    if children is None:
+                        children=Child.objects.filter(relation=m)
+                    else:
+                        children = children | Child.objects.filter(relation=m)
+                    #children = Child.objects.filter(Q(parent1=self) | Q(parent2=self))
+                except Child.DoesNotExist:
+                      pass
+
+        except Relationship.DoesNotExist:
+            pass
+        #try:
+        #    children = Child.objects.filter(relation=Relationship.objects.filter(Q(parent1=self) | Q(parent2=self)))
+        #except:
+        #    pass
+
+        #print(children)
+        return children
 
     def get_parents(self):
         try: 
@@ -242,31 +257,30 @@ class Individual(models.Model):
         dwg.add(link)
         
         for parent in parents:
-            #print(parent.parent1)
-            #print(parent.parent2.last_name)
-            if parent.parent1:
-                link = Hyperlink(str(parent.parent1.id), target='_top')
 
-                link.add(dwg.text("".join(parent.parent1.get_first_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
-                link.add(dwg.text("".join(parent.parent1.get_last_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y+space_name), fill='black',text_anchor='middle', font_size=str(size_font) + "px"))
+            if parent.relation.parent1:
+                link = Hyperlink(str(parent.relation.parent1.id), target='_top')
+
+                link.add(dwg.text("".join(parent.relation.parent1.get_first_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
+                link.add(dwg.text("".join(parent.relation.parent1.get_last_name(is_admin)), insert=(x_individu-(space_between_x/2), y_individu-space_between_y+space_name), fill='black',text_anchor='middle', font_size=str(size_font) + "px"))
                 dwg.add(link)
 
                 dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font), (x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
 
             #dwg.add(dwg.line((x_individu-20, y_individu-20+size_font), (x_individu, y_individu-size_font), stroke='grey'))
-            if parent.parent2:
-                link = Hyperlink(str(parent.parent2.id), target='_top')
-                link.add(dwg.text("".join(parent.parent2.get_first_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
-                link.add(dwg.text("".join(parent.parent2.get_last_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y+space_name), fill='black', text_anchor='middle',font_size=str(size_font) + "px"))
+            if parent.relation.parent2:
+                link = Hyperlink(str(parent.relation.parent2.id), target='_top')
+                link.add(dwg.text("".join(parent.relation.parent2.get_first_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y), fill='black', text_anchor='middle',font_size=str(size_font-1) + "px"))
+                link.add(dwg.text("".join(parent.relation.parent2.get_last_name(is_admin)), insert=(x_individu+(space_between_x/2), y_individu-space_between_y+space_name), fill='black', text_anchor='middle',font_size=str(size_font) + "px"))
                 dwg.add(link)
                 dwg.add(dwg.line((x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font), (x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
-            if parent.parent1 and parent.parent2:
+            if parent.relation.parent1 and parent.relation.parent2:
                 dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), (x_individu+(space_between_x/2), y_individu-space_between_y+space_name+size_font+5), stroke='grey'))
                 dwg.add(dwg.line((x_individu, y_individu-space_between_y+space_name+size_font+5), (x_individu, y_individu-size_font), stroke='grey'))
-            elif parent.parent1:
+            elif parent.relation.parent1:
                 dwg.add(dwg.line((x_individu-(space_between_x/2), y_individu-space_between_y+space_name+size_font+5),
                                  (x_individu, y_individu - size_font), stroke='grey'))
-            elif parent.parent2:
+            elif parent.relation.parent2:
                 dwg.add(dwg.line(
                     (x_individu + (space_between_x / 2), y_individu - space_between_y + space_name + size_font + 5),
                     (x_individu, y_individu - size_font), stroke='grey'))
@@ -297,7 +311,7 @@ class Individual(models.Model):
                     dwg.add(dwg.line((x_individu,  y_individu+space_name+2*nb_spouse+size_font), (x_spouse,  y_spouse+space_name+2*nb_spouse+size_font), stroke='grey'))
                 for child in children:
                     
-                    if child.parent1==real_spouse or child.parent2==real_spouse and ( is_admin or not child.child.private):
+                    if child.relation.parent1==real_spouse or child.relation.parent2==real_spouse and ( is_admin or not child.child.private):
                         nb_child += 1
 
                         link = Hyperlink(str(child.child.id), target='_top')
@@ -418,6 +432,8 @@ class Relationship(models.Model):
             return   self.parent1.first_name + " " + self.parent1.last_name
         elif self.parent2:
             return  self.parent2.first_name + " " + self.parent2.last_name
+        else:
+            return "Vide"
 
     def nice_marriagedate(self):
             if self.date_of_marriage is not None:
@@ -429,16 +445,12 @@ class Relationship(models.Model):
 
 class Child(models.Model):
     child = models.ForeignKey('Individual',null=True,related_name='child',on_delete=models.CASCADE)
-    parent1 = models.ForeignKey('Individual',null=True,related_name='father', blank=True, on_delete=models.SET_NULL)
-    parent2 = models.ForeignKey('Individual',null=True,related_name='mother', blank=True, on_delete=models.SET_NULL)
+    #parent1 = models.ForeignKey('Individual',null=True,related_name='father', blank=True, on_delete=models.SET_NULL)
+    #parent2 = models.ForeignKey('Individual',null=True,related_name='mother', blank=True, on_delete=models.SET_NULL)
+    relation=models.ForeignKey('Relationship',null=False,related_name='relation', blank=False, on_delete=models.CASCADE)
     class Meta:
         ordering = ["child"]
         verbose_name_plural = "Enfant"
 
     def __str__(self):
         return self.child.first_name + " " + self.child.last_name
-
-
-
-
-

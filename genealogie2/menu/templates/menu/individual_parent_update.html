@@ -5,7 +5,10 @@
 <h4>{{form.instance.child}}</h4>
 <body>
  <form method='POST' action=''>{% csrf_token %}
-  {% if  form.instance.parent1 is None %}
+
+     <p>Changer le couple : {{ form.relation }}</p>
+     <p><a href="/individu/{{form.instance.child.id}}/add_parents/">Ajouter un nouveau couple</a><p>
+  <!--{% if  form.instance.parent1 is None %}
      <p>Parent 1 (père) : {{ form.parent1 }}</p>
   <p><a href="/individu/{{form.instance.child.id}}/add_parents/">Ajouter une nouvelle personne</a><p>
   {% elif not form.instance.parent1.private or request.user|has_group:"tree_admin" %}
@@ -24,7 +27,7 @@
  <p><a href="/individu/{{form.instance.child.id}}/remove_parents/{{form.instance.parent2.id}}">Supprimer le lien de parenté</a><p>
   {% else %}
   <p> Parent 2 (mère) : Vous n'avez pas les autorisations nécessaires ! </p>
-  {% endif %}
+  {% endif %}-->
 
  <input type='submit' value='Valider' />
  </form>

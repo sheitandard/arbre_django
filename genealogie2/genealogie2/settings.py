@@ -92,7 +92,7 @@ WSGI_APPLICATION = 'genealogie2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydb',
+        'NAME': 'genealogie_db',
         'USER': 'sheitan',
         'PASSWORD': 'Millie-cdve2',
         'HOST': '127.0.0.1',
