@@ -186,16 +186,16 @@ class Individual(models.Model):
 
     def get_children(self):
         #from .views import is_current_user_admin
-        children=None
+        children=Child.objects.none()
 
         try:
             mariage=Relationship.objects.filter(Q(parent1=self) | Q(parent2=self))
             for m in mariage:
                 try:
-                    if children is None:
-                        children=Child.objects.filter(relation=m)
-                    else:
-                        children = children | Child.objects.filter(relation=m)
+                    # if children is None:
+                    #     children=Child.objects.filter(relation=m)
+                    # else:
+                    children = children | Child.objects.filter(relation=m)
                     #children = Child.objects.filter(Q(parent1=self) | Q(parent2=self))
                 except Child.DoesNotExist:
                       pass
