@@ -416,7 +416,7 @@ def update_parents(request, id=None):
 
     except  Child.DoesNotExist:
 
-        instance_child = Child(child=instance, relation=Relationship(parent1=None, parent2=None))
+        instance_child = Child(child=instance, relation=None)
 
 
     form = ParentForm(request.POST or None, instance=instance_child)
@@ -429,36 +429,48 @@ def update_parents(request, id=None):
         m.save()
 
         return HttpResponseRedirect(instance.get_absolute_url())
+
     elif len(request.POST)>0:
-        if request.POST["parent1"] != "":
-            father = get_object_or_404(Individual, id=int(request.POST["parent1"]))
-            m = Modification(subject=instance, user=request.user, note="un parent modifié : "+ str(father))
-            m.save()
+        if "relation" in  request.POST:
+            try:
+                relation_found = get_object_or_404(Relationship,id=request.POST["relation"])
+                instance_child.relation = relation_found
+                m = Modification(subject=instance, user=request.user, note="parents modifiés pour: " + str(instance))
+                m.save()
+                instance_child.user_who_last_updated = request.user
+                instance_child.save()
+                return HttpResponseRedirect(instance.get_absolute_url())
+            except Relationship.DoesNotExist:
+                print("weird, this relationship cannot be found")
+    #    if request.POST["parent1"] != "":
+    #        father = get_object_or_404(Individual, id=int(request.POST["parent1"]))
+    #        m = Modification(subject=instance, user=request.user, note="un parent modifié : "+ str(father))
+    #        m.save()
 
-        else:
-            father  = None
-        if request.POST["parent2"] != "":
-            mother = get_object_or_404(Individual, id=int(request.POST["parent2"]))
-            m = Modification(subject=instance, user=request.user, note="un parent modifié :" + str(mother))
-            m.save()
+    #    else:
+    #        father  = None
+    #    if request.POST["parent2"] != "":
+    #        mother = get_object_or_404(Individual, id=int(request.POST["parent2"]))
+    #        m = Modification(subject=instance, user=request.user, note="un parent modifié :" + str(mother))
+    #        m.save()
 
-        else:
-            mother = None
+    #    else:
+    #        mother = None
 
-        try:
-            new_relation=Relationship.objects.get(parent1=father, parent2=mother)
-        except Relationship.DoesNotExist:
-            new_relation =Relationship(parent1=father, parent2=mother)
-            m = Modification(subject=instance, user=request.user, note="nouvelle relation entre :" + str(father or "Unconnu") + " et " + str(mother or "Unconnue"))
-            m.save()
-            new_relation.save()
+    #    try:
+    #        new_relation=Relationship.objects.get(parent1=father, parent2=mother)
+    #    except Relationship.DoesNotExist:
+    #        new_relation =Relationship(parent1=father, parent2=mother)
+    #        m = Modification(subject=instance, user=request.user, note="nouvelle relation entre :" + str(father or "Unconnu") + " et " + str(mother or "Unconnue"))
+    #        m.save()
+    #       new_relation.save()
 
-        #if instance_child is None:
-        #    instance_child=Child(child=instance, relation=new_relation)
-        #else:
-        instance_child.relation=new_relation
-        instance_child.user_who_last_updated = request.user
-        instance_child.save()
+    #    #if instance_child is None:
+    #    #    instance_child=Child(child=instance, relation=new_relation)
+    #    #else:
+    #    instance_child.relation=new_relation
+    #    instance_child.user_who_last_updated = request.user
+    #    instance_child.save()
 
 
 
@@ -556,14 +568,14 @@ def add_parents(request, id=None):
     form1 = IndividualForm(None, instance=instance_child.relation.parent1)
     form2 = IndividualForm(None,instance=instance_child.relation.parent2)
 
-    if instance_child.relation.parent1 is None:
-        father=None
-    else :
-        father=instance_child.relation.parent1
-    if instance_child.relation.parent2 is None:
-        mother=None
-    else:
-        mother=instance_child.relation.parent2
+    #if instance_child.relation.parent1 is None:
+    #    father=None
+    #else :
+    #    father=instance_child.relation.parent1
+    #if instance_child.relation.parent2 is None:
+    #    mother=None
+    #else:
+    #    mother=instance_child.relation.parent2
     errors = []
 
 
@@ -614,6 +626,7 @@ def add_parents(request, id=None):
                 instance_child.save()
                 m = Modification(subject=father, user=request.user, note="ajout d'une relation avec " +mother.first_name + " "+mother.last_name)
                 m.save()
+                return HttpResponseRedirect(instance.get_absolute_url())
 
     elif 'Ajouter un lieu' in request.POST.values():
         add_location_html(request, old_request=request)
@@ -772,7 +785,7 @@ class RelationDelete(DeleteView):
         except Relationship.DoesNotExist:
             pass
 
-            self.object.delete()
+        self.object.delete()
 
         return HttpResponseRedirect(self.get_success_url())
 
