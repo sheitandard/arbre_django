@@ -48,6 +48,13 @@ month_list=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","D
 month_list_french=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
 # Create your models here
 
+def change_date_format(date):
+    date_split=date.split("/")
+    if len(date_split)==2:
+        return month_list[int(date_split[0])-1] + " " + date_split[1]
+    elif len(date_split)==3:
+        return date_split[0] + " " + month_list[int(date_split[1]) - 1] + " " + date_split[2]
+
 class Modification(models.Model):
     #subject = models.ForeignKey(Individual,on_delete=models.CASCADE)
     #subject_place = models.ForeignKey(Location)
@@ -350,6 +357,9 @@ class Individual(models.Model):
 
     def age(self):
         if self.date_of_birth:
+            if "/" in self.date_of_birth:
+                self.date_of_birth= change_date_format(self.date_of_birth)
+                self.save()
             birth=self.date_of_birth.split(" ")
             if len(birth)==1:
                 birth_day=1
@@ -366,7 +376,10 @@ class Individual(models.Model):
             birth_datetime=date(birth_year,birth_month,birth_day)
             #print(birth_datetime)
         if self.date_of_death:
-            death=self.date_of_death.split(" ")
+            if "/" in self.date_of_death:
+                self.date_of_death= change_date_format(self.date_of_death)
+                self.save()
+            death = self.date_of_death.split(" ")
             if not self.is_deceased:
                 self.is_deceased=True
                 self.save()
@@ -437,6 +450,9 @@ class Relationship(models.Model):
 
     def nice_marriagedate(self):
             if self.date_of_marriage is not None:
+                if "/" in self.date_of_marriage:
+                    self.date_of_marriage = change_date_format(self.date_of_marriage)
+                    self.save()
                 for month in month_list:
                     if month in self.date_of_marriage:
                         return self.date_of_marriage.replace(month, month_list_french[month_list.index(month)])
