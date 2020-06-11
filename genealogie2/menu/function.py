@@ -52,7 +52,8 @@ def export_gedcom(request, add_media=False):
             has_note=False
             file.write("0 @I"+str(indi.id)+"@ INDI\n")
             file.write("1 NAME "+indi.first_name+" /"+indi.last_name+"/\n")
-            file.write("1 SEX "+indi.gender+"\n")
+            if indi.gender is not None:
+            	file.write("1 SEX "+indi.gender+"\n")
             if indi.date_of_birth or indi.place_of_birth:
                 file.write("1 BIRT\n")
             if indi.date_of_birth:
