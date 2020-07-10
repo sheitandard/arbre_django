@@ -93,8 +93,8 @@
                                     <td>
 
                                             <a href="/individu/{{spouses_obj.parent1.id}}">{{ spouses_obj.parent1 }} </a> et <a href="/individu/{{spouses_obj.parent2.id}}">{{ spouses_obj.parent2 }}   (<a href="/individu/{{spouses_obj.id}}/update_relation/">modifier la relation (id={{spouses_obj.id}})</a>) </a>
-                                            {% if spouses_obj.date_of_marriage is not none %} mariés le {{ spouses_obj.nice_marriagedate}} {% endif %}
-                                            {% if spouses_obj.place_of_marriage is not none %} à {{ spouses_obj.place_of_marriage}}{% endif %}
+                                            {% if spouses_obj.date_of_marriage is not none and spouses_obj.date_of_marriage != '' %} mariés le {{ spouses_obj.nice_marriagedate}} {% endif %}
+                                            {% if spouses_obj.place_of_marriage is not none and spouses_obj.place_of_marriage != '' %} à {{ spouses_obj.place_of_marriage}}{% endif %}
                                             {% if individual.get_children  %}
                                                 <ul>
                                                     {% for child_obj in individual.get_children %}

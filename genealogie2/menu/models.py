@@ -27,6 +27,7 @@ STATUS_CHOICES = (
         ('mariage ou Pacs', 'mariage ou Pacs'),
         ('concubinage', 'concubinage'),
         ('divorce', 'divorce'),
+        ('autre', 'autre'),
     )
 
 MONTH_CHOICES = (
