@@ -1,40 +1,27 @@
 {% extends "menu/header.html" %}
 {% block content %}
-{% load static %}
-{% load has_group %}
-<!--
-<head>
-    <script type="text/javascript" src="https://github.com/ariutta/svg-pan-zoom/blob/master/dist/svg-pan-zoom.js"></script>
-  </head>-->
-
-  <h1>Lieu : {{ location.country }} {{ location.city }}</h1>
-
-<table summary="detail_place" border="1" id="detail">
-<tr><td width="400px">
-
-
-  <p><strong>Pays :</strong>  {{ location.country }} </p>
-  <p><strong>Ville / Commune :</strong> {% if location.city is not none %}{{ location.city }}{%endif %} </p>
-  <p><strong>{% if location.country == 'France' %} Département :
-        {% elif location.country == 'Algérie' %} Wilaya :
-        {% elif location.country == 'Allemagne' %} District :
-      {% elif location.country == 'Espagne' %} Province :
-      {% elif location.country == 'Grande-Bretagne' %} Comté :
-      {% elif location.country == 'Italie' %} Région :
-      {% elif location.country == 'Maroc' %} Région :
-       {% elif location.country == 'Méxique' %} Etat :
-       {% elif location.country == 'Pologne' %} Powiat (District) :
-      {% elif location.country == 'Prusse' %} Province :
-      {% else  %} Région / Province :
-      {%endif %}
-
-  </strong>
-
-      {% if location.department is not none %}{{ location.department }}{%endif %} </p>
-    <p><strong>Eglise / arrondissement :</strong> {% if location.church is not none %}{{ location.church }}{%endif %} </p>
-    <p><a href="/lieu/{{location.id}}/update/">Modifier les données</a></p>
-  </td></tr></table>
-  {% include 'menu/includes/htmlsnippet.html' %}
-
-
+    {% load static %}
+    {% load has_group %}
+    <h1>Lieu : {{ location.country }} {{ location.city }}</h1>
+    <table summary="detail_place" border="1" id="detail">
+        <tr><td width="400px">
+            <p><strong>Pays :</strong>  {{ location.country }} </p>
+            <p><strong>Ville / Commune :</strong> {% if location.city is not none %}{{ location.city }}{%endif %} </p>
+            <p><strong>{% if location.country == 'France' %} Département :
+                        {% elif location.country == 'Algérie' %} Wilaya :
+                        {% elif location.country == 'Allemagne' %} District :
+                        {% elif location.country == 'Espagne' %} Province :
+                        {% elif location.country == 'Grande-Bretagne' %} Comté :
+                        {% elif location.country == 'Italie' %} Région :
+                        {% elif location.country == 'Maroc' %} Région :
+                        {% elif location.country == 'Méxique' %} Etat :
+                        {% elif location.country == 'Pologne' %} Powiat (District) :
+                        {% elif location.country == 'Prusse' %} Province :
+                        {% else  %} Région / Province :
+                        {%endif %}
+                </strong>{% if location.department is not none %}{{ location.department }}{%endif %} </p>
+                    <p><strong>Eglise / arrondissement :</strong> {% if location.church is not none %}{{ location.church }}{%endif %} </p>
+                    <p><a href="/lieu/{{location.id}}/update/">Modifier les données</a></p>
+        </td></tr></table>
+        {% include 'menu/includes/htmlsnippet.html' %}
 {% endblock %}

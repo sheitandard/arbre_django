@@ -15,7 +15,6 @@ def update_child(request):
     for child in all_child:
         try:
             relation=Relationship.objects.get(parent1=child.parent1, parent2=child.parent2)
-            #print(relation.id)
             child.relation=relation
             child.save()
             try:
@@ -25,8 +24,6 @@ def update_child(request):
         except Relationship.DoesNotExist:
             print("pb does not exist")
             print(child)
-
-
     return 0
 
 def export_gedcom(request, add_media=False):
@@ -45,15 +42,12 @@ def export_gedcom(request, add_media=False):
         child_all=Child.objects.all()
         if not is_current_user_admin(request.user):
             all_indi=all_indi.exclude(private=True)
-        #all_indi=[]
-        #mariage_all=[]
-        #child_all=[]
         for indi in all_indi:
             has_note=False
             file.write("0 @I"+str(indi.id)+"@ INDI\n")
             file.write("1 NAME "+indi.first_name+" /"+indi.last_name+"/\n")
             if indi.gender is not None:
-            	file.write("1 SEX "+indi.gender+"\n")
+                file.write("1 SEX "+indi.gender+"\n")
             if indi.date_of_birth or indi.place_of_birth:
                 file.write("1 BIRT\n")
             if indi.date_of_birth:
@@ -146,7 +140,6 @@ def export_gedcom(request, add_media=False):
                 file.write("2 FILE " + marriage.divorce_source.url + "\n")
         file.write("0 TRLR\n")
     file.close()
-
     zip_subdir = "arbre_genealogique"
     zip_filename = "%s.zip" % zip_subdir
     s = io.BytesIO()
@@ -166,11 +159,6 @@ def export_gedcom(request, add_media=False):
     zf.close()
     resp = HttpResponse(s.getvalue(), content_type='application/x-zip-compressed')
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
-    #resp['Set-Cookie'] = 'fileDownload=true; Path=/'
-
-    #response = HttpResponse(open("gedcom/gedcom_tmp.ged", 'r', encoding="utf-8").read())
-    #response['Content-Type'] = 'text/plain'
-    #response['Content-Disposition'] = 'attachment; filename='+name_file
     return resp
 
 def export_gedcom_with_media(request):

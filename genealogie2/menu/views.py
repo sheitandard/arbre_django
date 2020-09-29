@@ -1,24 +1,14 @@
 from django.shortcuts import render
 from .forms import ReadFileForm, IndividualForm, RelationshipForm, ChildForm, ParentForm, LocationForm
 from django.shortcuts import get_object_or_404
-from django.forms import inlineformset_factory
 from django.urls import reverse_lazy
 import os
-from datetime import datetime
-from django.db import models
 from .models import Location, Individual, Relationship, Child, month_list, Modification
 from django.contrib.auth.models import Group
-
 from django.views import generic
-import operator
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from functools import reduce
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect,HttpResponse, JsonResponse
 from django.views.generic.edit import UpdateView, FormView, DeleteView
-from django.views.generic import TemplateView
-from django.contrib import messages
-
 from django.core.files import File
 
 
@@ -109,9 +99,6 @@ class IndividuDelete(DeleteView):
                         marriage.parent2.user_who_last_updated = request.user
                         marriage.parent2.save()
 
-
-
-
         except Relationship.DoesNotExist:
             pass
 
@@ -145,7 +132,6 @@ class PlaceListView(generic.ListView):
 
             for element in query_element:
                 d=d.filter(Q(country__icontains=element)  | Q(city__icontains=element) | Q(department__icontains=element) | Q(church__icontains=element) )
-
         return d
 
 class PlaceDetailView(generic.DetailView):
@@ -154,8 +140,6 @@ class PlaceDetailView(generic.DetailView):
 
 
 def index(request):
-    #current_user=request.user
-    #print("index user", current_user)
     return render(request, 'menu/home.html')
 
 
@@ -245,13 +229,8 @@ def add_relation(id_fam,husband_id,wife_id,date_marriage,place_marriage,date_div
         except:
             print("Cette relation est déjà dans la base de données")
 
-#def get_current_user():
-#	return current_user
-
 def is_current_user_admin(user=None):
     query_group = Group.objects.filter(user = user)
-    #print("current user",user)
-    #print(query_group)
     if 'tree_admin' in query_group[0].name:
         return True
     return False
@@ -261,7 +240,6 @@ def is_current_user_admin(user=None):
 def import_gedcom(request):
     form = ReadFileForm()
     encodage='utf-8'
-    #encodage="ascii"
     if request.method == 'POST':
         form = ReadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -269,24 +247,19 @@ def import_gedcom(request):
                 return render(request, 'menu/read_file.html',{'content':[' Veuillez entrez un fichier de type GEDCOM (et finissant par .ged).', form]})
             else:
                 print("else")
-                # Do something with content
                 content = request.FILES['fichier'].readline()
                 print(content)
                 gedcom_id=None
                 id_fam=None
                 commentaire=""
-
                 while content:
                     print(content)
                     content_part= content.decode(encodage,'ignore').split(" ")
-                    #print(content_part)
                     if len(content_part)>2 :
-
                         if content_part[2].rstrip()=="INDI":
                             if gedcom_id:
                                 add_individual(gedcom_id, first_name, last_name,gender, date_of_birth, date_of_death, place_of_birth, place_of_death,
                             occupation, commentaire)
-
                             first_name = '?'
                             last_name = '?'
                             gender = "A"
@@ -351,9 +324,7 @@ def import_gedcom(request):
                             content = request.FILES['fichier'].readline()
                             while content and content.decode(encodage,'ignore').split(" ")[0]=='2':
                                 print(content)
-                                #print("here")
                                 content_part= content.decode(encodage,'ignore').split(" ")
-                                #print(content_part)
                                 if len(content_part)>2 :
                                     if content_part[1]=="DATE":
                                         if type=="BIRT":
@@ -365,17 +336,7 @@ def import_gedcom(request):
                                             status="mariage ou Pacs"
                                         elif type=="DIV":
                                             date_divorce=" ".join(content_part[2:]).rstrip()
-                                    #elif content_part[1]=="PLAC":
-                                    ###	if add_location(content_part)!=0:
-                                    ###		if type=="BIRT":
-                                    ###			place_of_birth=add_location(content_part)
-                                    ###		elif type=="DEAT":
-                                    ##			place_of_death=add_location(content_part)
-                                    #		elif type=="MARR":
-                                    #			place_marriage=add_location(content_part)
-                                    #			status="mariage ou Pacs"
                                 content = request.FILES['fichier'].readline()
-                                #print("there")
                         else:
                             content = request.FILES['fichier'].readline()
                     else:
@@ -389,23 +350,18 @@ def import_gedcom(request):
 
 def update_individu(request, id=None):
     instance=get_object_or_404(Individual,id=id)
-    #print(instance)
     form=IndividualForm(request.POST or None, request.FILES or None,instance=instance)
 
     if form.is_valid():# and rform.is_valid() and cform.is_valid():
         instance=form.save(commit=False)
         instance.user_who_last_updated = request.user
-
-
         instance.save()
-        #print(instance)
         m = Modification(subject=instance, user=request.user, note="modification des données personnelles de "+ instance.first_name + " " +instance.last_name)
         m.save()
         return HttpResponseRedirect(instance.get_absolute_url())
     context={
                 "form":form,}
     return render(request, 'menu/individual_detail_update.html', context )
-
 
 
 def update_parents(request, id=None):
@@ -418,7 +374,6 @@ def update_parents(request, id=None):
 
         instance_child = Child(child=instance, relation=None)
 
-
     form = ParentForm(request.POST or None, instance=instance_child)
     print("request.POST",request.POST)
 
@@ -427,7 +382,6 @@ def update_parents(request, id=None):
         instance_child.save()
         m = Modification(subject=instance, user=request.user, note="parents modifiés")
         m.save()
-
         return HttpResponseRedirect(instance.get_absolute_url())
 
     elif len(request.POST)>0:
@@ -442,38 +396,6 @@ def update_parents(request, id=None):
                 return HttpResponseRedirect(instance.get_absolute_url())
             except Relationship.DoesNotExist:
                 print("weird, this relationship cannot be found")
-    #    if request.POST["parent1"] != "":
-    #        father = get_object_or_404(Individual, id=int(request.POST["parent1"]))
-    #        m = Modification(subject=instance, user=request.user, note="un parent modifié : "+ str(father))
-    #        m.save()
-
-    #    else:
-    #        father  = None
-    #    if request.POST["parent2"] != "":
-    #        mother = get_object_or_404(Individual, id=int(request.POST["parent2"]))
-    #        m = Modification(subject=instance, user=request.user, note="un parent modifié :" + str(mother))
-    #        m.save()
-
-    #    else:
-    #        mother = None
-
-    #    try:
-    #        new_relation=Relationship.objects.get(parent1=father, parent2=mother)
-    #    except Relationship.DoesNotExist:
-    #        new_relation =Relationship(parent1=father, parent2=mother)
-    #        m = Modification(subject=instance, user=request.user, note="nouvelle relation entre :" + str(father or "Unconnu") + " et " + str(mother or "Unconnue"))
-    #        m.save()
-    #       new_relation.save()
-
-    #    #if instance_child is None:
-    #    #    instance_child=Child(child=instance, relation=new_relation)
-    #    #else:
-    #    instance_child.relation=new_relation
-    #    instance_child.user_who_last_updated = request.user
-    #    instance_child.save()
-
-
-
     context={
                 "form":form}
     return render(request, 'menu/individual_parent_update.html', context )
@@ -501,7 +423,6 @@ def remove_parents(request, id=None, id2=None):
         link.delete()
     else:
         link.save()
-    #instance_child = get_object_or_404(Child, child=instance)
     try :
         instance_child=Child.objects.get(child=instance)
         form = ParentForm(request.POST or None, instance=instance_child)
@@ -567,15 +488,6 @@ def add_parents(request, id=None):
 
     form1 = IndividualForm(None, instance=instance_child.relation.parent1)
     form2 = IndividualForm(None,instance=instance_child.relation.parent2)
-
-    #if instance_child.relation.parent1 is None:
-    #    father=None
-    #else :
-    #    father=instance_child.relation.parent1
-    #if instance_child.relation.parent2 is None:
-    #    mother=None
-    #else:
-    #    mother=instance_child.relation.parent2
     errors = []
 
 
@@ -612,10 +524,6 @@ def add_parents(request, id=None):
                     father.save()
                     m = Modification(subject=father, user=request.user, note="ajout du père de "+instance.first_name + " "+instance.last_name)
                     m.save()
-
-                    #instance_child.relation.parent1=father
-                    #instance_child.relation.save()
-                    #instance_child.save()
                     m = Modification(subject=instance, user=request.user, note="ajout d'une relation parent-enfant")
                     m.save()
                 else:
@@ -631,8 +539,6 @@ def add_parents(request, id=None):
     elif 'Ajouter un lieu' in request.POST.values():
         add_location_html(request, old_request=request)
     print("errors",errors)
-    #if instance_child.relation.parent1 is not None and instance_child.relation.parent2 is not None:
-    #    return HttpResponseRedirect(instance.get_absolute_url())
 
     context={
                 "form1":form1,
@@ -662,17 +568,13 @@ def add_relationship(request, id=None):
             if form.is_valid():
                 print("form is valid")
                 form.clean()
-
                 relation = form.save(commit=False)
-
                 instance.user_who_last_updated = request.user
                 instance.save()
                 relation.save()
                 print(relation)
                 m = Modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire existant pour "+instance.first_name + " "+instance.last_name)
                 m.save()
-
-
             return HttpResponseRedirect(instance.get_absolute_url())
     context={
                 "form":form
@@ -686,8 +588,6 @@ def add_partner(request, id=None):
     instance = get_object_or_404(Individual, id=id)
     form = IndividualForm(request.POST or None)
     if 'save' in request.POST:
-
-
             if form.is_valid() :
                 form.clean()
                 new_partner = form.save(commit=False)
@@ -705,7 +605,6 @@ def add_partner(request, id=None):
                     relation = Relationship(parent2=instance, parent1=new_partner)
                 m = Modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire pour "+instance.first_name + " "+instance.last_name)
                 m.save()
-
             return HttpResponseRedirect(instance.get_absolute_url()+"/add_relation")
     context={
                 "form":form
@@ -721,7 +620,6 @@ def update_relation(request, id=None):
         if form.is_valid():
             print("form is valid")
             form.clean()
-
             relation = form.save(commit=False)
             relation.save()
             if relation.parent1 is not None:
@@ -737,9 +635,6 @@ def update_relation(request, id=None):
                 m = Modification(subject=relation.parent2, user=request.user,
                                  note="modification d'un(e) relation pour " + relation.parent2.first_name + " " + relation.parent2.last_name)
                 m.save()
-
-
-
         return HttpResponseRedirect(relation.parent1.get_absolute_url())
     context = {
         "form": form
@@ -766,27 +661,11 @@ class RelationDelete(DeleteView):
                 self.object.parent2.save()
             m2 = Modification(subject=subject_modif, user=request.user,
                               note="Suppression de la relation entre " + str(self.object.parent1 or "None") + " et " + str(self.object.parent2 or "None"))
-
-
             m2.save()
-
-            #try:
-            #    children = Child.objects.get(parent1=self.object.parent1, parent2=self.object.parent2)
-            #    for child in children:
-            #        m2 = Modification(subject=subject_modif, user=request.user,
-            #                          note="Suppression de la relation parent-enfant entre " + str(self.object.parent1 or "None") + " - " + str(self.object.parent2 or "None") + " et " + str(child or "None"))
-
-            #       m2.save()
-            #       child.delete()
-
-            #except Child.DoesNotExist:
-            #    pass
-            #    self.object.delete()
         except Relationship.DoesNotExist:
             pass
 
         self.object.delete()
-
         return HttpResponseRedirect(self.get_success_url())
 
 def add_children(request, id=None):
@@ -822,7 +701,6 @@ def add_existing_children(request, id=None):
     print("add_existing_children")
     relation = get_object_or_404(Relationship, id=id)
     child_relation = Child(relation=relation)
-    #child_relation.save()
     form = ChildForm(request.POST or None, instance = child_relation)
     instance = get_object_or_404(Individual, id=relation.parent1.id)
     if 'save' in request.POST:
@@ -869,7 +747,6 @@ def add_location_html(request):
                 form.clean()
                 loc = form.save(commit=False)
                 loc.save()
-
                 m = Modification(subject=loc, user=request.user, note="ajout d'un lieu")
                 m.save()
                 return HttpResponse('<script type="text/javascript">window.opener.reload_places();window.close();</script>')
@@ -909,24 +786,16 @@ def import_sources(request):
         for file in list_files:
             if file.endswith(".jpg") or file.endswith(".png"):
                 element = file.split(".")[0].split(" ")
-                #try:
-                #    print(file)
-                #except UnicodeEncodeError:
-                #    pass
                 type = "naissance"
                 if "mariage" in file or "Mariage" in file:
                     type = "mariage"
                 elif ("deces" or "décès") in file and "naissance" not in file:
                     type="deces"
-                #print("type", type)
-
                 if type == "mariage":
 
                     names=["","","",""]
                     eli = len(names)-1
                     for el in range(len(element)-1,-1,-1):
-
-
                         if element[el] not in ("de","et","mariage","avec"):
                             if names[eli]!="" :
                                 names[eli]=names[eli]+" "
@@ -935,13 +804,7 @@ def import_sources(request):
                             eli=eli-1
 
                     firstname1,lastname1,firstname2,lastname2=names
-                    #try:
-                    #    print(names)
-                    #except:
-                    #    print("weird name")
-
                     try:
-
                         mariage=mariage_all.filter(parent1__in=Individual.objects.filter(Q(last_name__icontains=lastname1)))
                         if len(mariage) > 1:
                             mariage = mariage.filter(parent2__in= Individual.objects.filter(Q(last_name__icontains=lastname2)))
@@ -965,8 +828,6 @@ def import_sources(request):
                                     parent2__in=Individual.objects.filter(Q(first_name__icontains=firstname1.split(" ")[-1])))
                     except Relationship.DoesNotExist:
                         print("no mariage")
-
-                    #print(len(mariage))
                     if len(mariage)!=1:
                         print("echec mariage")
                         nb_mariage_fail=nb_mariage_fail+1
@@ -977,7 +838,6 @@ def import_sources(request):
                             pass
                     else:
                         file_name=os.path.basename(file)
-                        #print("old_source", mariage[0].marriage_source)
                         if mariage[0].marriage_source.name is None:
                             nb_mariage_success=nb_mariage_success+1
                             full_path=path+"/"+file
@@ -992,7 +852,6 @@ def import_sources(request):
                     i=2
                     year_birth=None
                     year_death=None
-                    #print(len(element),i)
                     while i<len(element):
                         if "deces" not in element[i] and "décès" not in element[i]:
                             if "1" not in element[i]:
@@ -1022,7 +881,6 @@ def import_sources(request):
                             print(file)
                         except:
                             print("weird name")
-                        #print(year_birth, year_death)
 
                     elif individu[0].death_source.name is None:
                         nb_deces_success = nb_deces_success + 1
@@ -1032,21 +890,11 @@ def import_sources(request):
                             print("replacing file now")
                             django_file = File(f)
                             individu[0].death_source.save(file_name, django_file, save=True)
-                    #else:
-                    #    print("y'a déjà un fichier pour le décès")
 
                 elif type=="naissance":
                     nb_naissance = nb_naissance + 1
                     lastname = element[0]
                     firstname = element[1].split(".")[0]
-                    #try:
-                    #    print("new file")
-                    #    print(firstname, lastname)
-                    #    print(file)
-                    #except:
-                    #    pass
-
-
                     i = 2
                     year_birth = None
                     year_death = None
@@ -1077,8 +925,6 @@ def import_sources(request):
 
                     if len(individu) > 1:
                         individu = individu.filter(Q(first_name=firstname))
-
-
                     if len(individu) != 1:
                         print("echec pour trouver naissance")
                         nb_naissance_fail = nb_naissance_fail + 1
@@ -1093,10 +939,6 @@ def import_sources(request):
                         nb_naissance_success = nb_naissance_success + 1
                         full_path = path + "/" + file
                         file_name = os.path.basename(file)
-                        #with open(full_path, 'rb') as f:
-                        #    print("replacing file now")
-                        #    django_file = File(f)
-                        #    individu[0].birth_source.save(file_name, django_file, save=True)
                     else:
                         nb_naissance_fail = nb_naissance_fail + 1
                         #print("y'a déjà un fichier pour la naissance!")
@@ -1104,13 +946,9 @@ def import_sources(request):
     print("nb naissance",nb_naissance )
     print("sucess naissance",nb_naissance_success )
     print("fail naissance",nb_naissance_fail )
-
     print("nb deces",nb_deces )
     print("sucess deces",nb_deces_success )
     print("fail deces",nb_deces_fail )
-
-
     print("sucess mariage",nb_mariage_success )
     print("fail mariage",nb_mariage_fail )
-
     return 0

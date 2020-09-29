@@ -1,38 +1,30 @@
 {% extends "menu/header.html" %}
-
 {% block content %}
-
-{% if form.errors %}
-<p>Erreur dans l'identifiant ou le mot de passe. Essayez encore.</p>
-{% endif %}
-
-{% if next %}
-    {% if user.is_authenticated %}
-    <p>Vous n'avez pas les autorisations nécessaires pour accéder à la page.</p>
-    {% else %}
-    <p>Connectez-vous pour accedez à la page</p>
+    {% if form.errors %}
+        <p>Erreur dans l'identifiant ou le mot de passe. Essayez encore.</p>
     {% endif %}
-{% endif %}
-
-<form method="post" action="{% url 'login' %}">
-{% csrf_token %}
-
-<div>
-  <td>{{ form.username.label_tag }}</td>
-  <td>{{ form.username }}</td>
-</div>
-<div>
-  <td>{{ form.password.label_tag }}</td>
-  <td>{{ form.password }}</td>
-</div>
-
-<div>
-  <input type="submit" value="Se connecter" />
-  <input type="hidden" name="next" value="{{ next }}" />
-</div>
-</form>
-
-{# Assumes you setup the password_reset view in your URLconf #}
-<p><a href="{% url 'password_reset' %}">Mot de passe perdu?</a></p>
-
+    {% if next %}
+        {% if user.is_authenticated %}
+            <p>Vous n'avez pas les autorisations nécessaires pour accéder à la page.</p>
+        {% else %}
+            <p>Connectez-vous pour accedez à la page</p>
+        {% endif %}
+    {% endif %}
+    <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+        <div>
+          <td>{{ form.username.label_tag }}</td>
+          <td>{{ form.username }}</td>
+        </div>
+        <div>
+          <td>{{ form.password.label_tag }}</td>
+          <td>{{ form.password }}</td>
+        </div>
+        <div>
+          <input type="submit" value="Se connecter" />
+          <input type="hidden" name="next" value="{{ next }}" />
+        </div>
+    </form>
+    {# Assumes you setup the password_reset view in your URLconf #}
+    <p><a href="{% url 'password_reset' %}">Mot de passe perdu?</a></p>
 {% endblock %}

@@ -1,9 +1,7 @@
 from django import template
 import re
 
-
 register = template.Library()
-
 
 @register.filter(name='link_name')
 def link_name(path, page_number):

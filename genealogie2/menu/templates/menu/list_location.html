@@ -1,59 +1,43 @@
 {% extends "menu/header.html" %}
 {% load static %}
 {% block content %}
-
-
-<!--
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-
-<script type="text/javascript">
-	$(document).ready(function() {
-    $('#people').DataTable();
-} );
-</script>
--->
-{% if user.is_authenticated %}
-
-<head>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <script type="text/javascript" >
-
-    function reload_places(){
-         $.ajax({
-            url:"place_list",
-            data:{},
-            type:"GET",
-            dataType:"json",
-            })
-
-         .done(function(json){
-
-           window.location.reload(true);
-                    })
-         .fail(function(){
-                alert("Error!");
-               });
-    }
-
-    </script>
-</head>
-
-   {% include 'menu/includes/search_box_places.html' %}
-<a href="menu/add_location.html" target="_blank">Ajouter un lieu</a>
-   <table summary="list_location" border="1" id="locations">
-	<thead><tr><th> Pays  </th></tr></thead>
-   {% for loc in object_list %}
-   		<tr>
-   		<td width="25%">  <a href="/lieu/{{loc.id}}">  {{ loc.country}} {{ loc.city}} {{ loc.department}} {{ loc.church}}</a></td>
-
-        </tr>
-		<!--<p><a href="/individu/{{individu.id}}">  {{ individu.last_name}} {{ individu.first_name }}</a></p> -->
-	{% endfor %}
-	</table>
-{% include 'menu/includes/htmlsnippet.html' %}
-{% else %}
-  <p>Vous n'êtes pas connecté!</p>
-  <a href="{% url 'login' %}">Se connecter</a>
-{% endif %}
+    {% if user.is_authenticated %}
+        <head>
+            <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+            <script type="text/javascript" >
+                function reload_places(){
+                     $.ajax({
+                        url:"place_list",
+                        data:{},
+                        type:"GET",
+                        dataType:"json",
+                        })
+                     .done(function(json){
+                       window.location.reload(true);
+                                })
+                     .fail(function(){
+                            alert("Error!");
+                           });
+                }
+            </script>
+        </head>
+        <body>
+            {% include 'menu/includes/search_box_places.html' %}
+            <a href="menu/add_location.html" target="_blank">Ajouter un lieu</a>
+            <table summary="list_location" border="1" id="locations">
+                <thead><tr><th> Pays  </th></tr></thead>
+                    {% for loc in object_list %}
+                        <tr>
+                            <td width="25%">
+                                <a href="/lieu/{{loc.id}}">  {{ loc.country}} {{ loc.city}} {{ loc.department}} {{ loc.church}}</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+            </table>
+            {% include 'menu/includes/htmlsnippet.html' %}
+        </body>
+    {% else %}
+      <p>Vous n'êtes pas connecté!</p>
+      <a href="{% url 'login' %}">Se connecter</a>
+    {% endif %}
 {% endblock %}

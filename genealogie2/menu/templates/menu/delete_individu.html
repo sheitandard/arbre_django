@@ -1,26 +1,15 @@
 {% extends "menu/header.html" %}
 {% block content %}
-{% load static %}
-{% load has_group %}
-<!--
-<head>
-    <script type="text/javascript" src="https://github.com/ariutta/svg-pan-zoom/blob/master/dist/svg-pan-zoom.js"></script>
-  </head>-->
-
-  <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
-{% if request.user|has_group:"tree_admin" or request.user == individual.user_who_created  %}
-<form method="post">{% csrf_token %}
-    <p>Etes-vous sûr(e) de vouloir supprimer définitivement "{{ object }}" ?</p>
-    <input type="submit" value="Confirmer">
-</form>
-
-
-  {% else %}
-   " Vous n'avez pas les droits de supprimer quoi que ce soit!"
-   {% endif %}
-
-  </div>
-  {% include 'menu/includes/htmlsnippet.html' %}
-
-
+    {% load static %}
+    {% load has_group %}
+    <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
+    {% if request.user|has_group:"tree_admin" or request.user == individual.user_who_created  %}
+        <form method="post">{% csrf_token %}
+            <p>Etes-vous sûr(e) de vouloir supprimer définitivement "{{ object }}" ?</p>
+            <input type="submit" value="Confirmer">
+        </form>
+    {% else %}
+       " Vous n'avez pas les droits de supprimer quoi que ce soit!"
+    {% endif %}
+    {% include 'menu/includes/htmlsnippet.html' %}
 {% endblock %}

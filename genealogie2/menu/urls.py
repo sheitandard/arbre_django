@@ -15,24 +15,13 @@ Including another URLconf
 """
 #from django.urls import path
 from django.conf.urls import url, include
-from django.views.generic import ListView, DetailView
-from menu.models import Individual
 from . import views, function
-from django.conf import settings
-from django.conf.urls.static import static
-
-
-#query=Individual.objects.exclude(last_name='?').exclude(first_name='?').order_by('last_name')
-
-#print(query).order_by(last_name)
 
 urlpatterns = [
 	url('contact/', views.contact, name='contact'),
 	url('import_gedcom/', views.import_gedcom, name='import_gedcom'),
 	url('list_modification/',views.ModificationListView.as_view(), name='Liste des modifications'),
 	url('list_places/$',views.PlaceListView.as_view(), name='Liste des lieux'),
-#	url('import_sources/$', views.import_sources, name='Importer des sources'),
-#    url('update_child_class/$', function.update_child, name='Update Child Class'),
 	url('export_gedcom/$', function.export_gedcom, name='export_gedcom'),
 	url('export_gedcom_with_media/$', function.export_gedcom_with_media, name='export_gedcom_with_media'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
@@ -52,10 +41,6 @@ urlpatterns = [
 	url('.*/add_location', views.add_location_html, name='add_location'),
 	url('.*place_list',views.place_list, name="place_list"),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
-
-
-	#url('individu/<int:pk>', views.individual_detail_view(), name='Information'),
-
 ]
 
 

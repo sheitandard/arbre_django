@@ -1,19 +1,14 @@
 {% extends "menu/header.html" %}
 {% block content %}
-
-
-<body>
-
-  <table>
-    <td>
-       <form method='POST' action=''>{% csrf_token %}
-            Nouvel endroit :
-                 {{ form.as_p }}
-                  <input type='submit' value='Enregistrer' name="save_location" />
-       </form>
-   </td>
-
-  </table>
-</body>
-
+    <body>
+      <table>
+        <td>
+           <form method='POST' action=''>{% csrf_token %}
+                Nouvel endroit :
+                     {{ form.as_p }}
+                      <input type='submit' value='Enregistrer' name="save_location" />
+           </form>
+       </td>
+      </table>
+    </body>
 {% endblock %}

@@ -1,13 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-
 from .models import Individual, Relationship, Child, Location
-#from django_select2 import ChoiceField
-from django.forms import inlineformset_factory
-from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
-from django.forms import widgets
-from django.conf import settings
 
 
 class ReadFileForm(forms.Form):
@@ -45,9 +38,6 @@ class LocationForm(ModelForm):
 
 
 class IndividualForm(ModelForm):
-    #place_of_birth_text=ChoiceField( widget=ModelSelect2Widget(model=Location, search_fields=['title__istartswith']),
-    #queryset=Location.objects.all(), required=False)
-    #add_location = forms.CharField( max_length=15,label=mark_safe(' <a href="menu/location_add.html" target="_blank">Ajouter</a>?'))
     class Meta:
         model = Individual
         fields = ["first_name",
@@ -57,17 +47,15 @@ class IndividualForm(ModelForm):
                 "image",
                 "date_of_birth",
                 "place_of_birth",
-
                 "date_of_death",
                 "place_of_death",
                 "place_of_residence",
                 "birth_source",
-                  "death_source",
+                "death_source",
                 "occupation",
                 "email",
                 "comment"
         ]
-        #exclude=["place_of_birth"]
         labels = {
                 "first_name":"Prénom(s)",
                 "last_name":"Nom",
@@ -85,17 +73,10 @@ class IndividualForm(ModelForm):
                 "email":"Email",
                 "comment":"Commentaire"}
 
-   # def __init__(self, *args, **kwargs):
-   #     user = kwargs.pop('user', '')
-   #     super(DocumentForm, self).__init__(*args, **kwargs)
-   #     self.fields['user_defined_code'] = forms.ModelChoiceField(queryset=UserDefinedCode.objects.filter(owner=user))
-   #     self.fields['unique_code'] = forms.CharField(max_length=15)
-
     def clean(self):
             cleaned_data = super().clean()
             first_name = cleaned_data.get("first_name")
             last_name = cleaned_data.get("last_name")
-
 
             if first_name=='':
                 msg = "Le prénom ne peut pas être vide!"
@@ -105,26 +86,19 @@ class IndividualForm(ModelForm):
                 msg = "Le nom ne peut pas être vide!"
                 self.add_error('last_name', msg)
 
-
-
             return cleaned_data
-    #def __init__(self, *args, **kwargs):
-    #            #user = kwargs.pop('user', '')
-    ##            super(IndividualForm, self).__init__(*args, **kwargs)
-    #             self.fields['location'] = forms.ModelChoiceField(queryset=Location.objects.all())
-
 
 class RelationshipForm(ModelForm):
     class Meta:
         model = Relationship
-        fields = ["parent1",
-                "parent2",
-                "status",
-                "date_of_marriage",
-                  "place_of_marriage",
-                "date_of_divorce",
-                  "marriage_source",
-                  "divorce_source"]
+        fields = [  "parent1",
+                    "parent2",
+                    "status",
+                    "date_of_marriage",
+                    "place_of_marriage",
+                    "date_of_divorce",
+                    "marriage_source",
+                    "divorce_source"]
         labels = {
             "parent1":"1ère personne",
             "parent2":"2e personne",
@@ -135,10 +109,6 @@ class RelationshipForm(ModelForm):
             "marriage_source":"Certificat de mariage",
             "divorce_source":"Certificat de divorce"
         }
-
-
-
-
 
 class ChildForm(ModelForm):
     class Meta:
@@ -157,6 +127,3 @@ class ParentForm(ModelForm):
                 ]
         labels = {
             "relation":"Couple"}
-
-
-

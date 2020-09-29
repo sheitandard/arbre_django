@@ -1,17 +1,10 @@
 {% extends "menu/header.html" %}
 {% load has_group %}
 {% block content %}
-
-<body>
- <form method='POST' action='' enctype="multipart/form-data">{% csrf_token %}
- {{ form.as_p }}
- <input type='submit' value='Valider' />
- </form>
-
-
-
-
-
-</body>
-
+  <body>
+     <form method='POST' action='' enctype="multipart/form-data">{% csrf_token %}
+       {{ form.as_p }}
+       <input type='submit' value='Valider' />
+     </form>
+ </body>
 {% endblock %}

@@ -1,43 +1,29 @@
 {% extends "menu/header.html" %}
 {% load static %}
 {% block content %}
-
-
-<!--
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-
-<script type="text/javascript">
-	$(document).ready(function() {
-    $('#people').DataTable();
-} );
-</script>
--->
-{% if user.is_authenticated %}
-
-   <table summary="list_modif" border="1" id="modif">
-	<thead><tr><th> Date  </th><th>Utilisateur   </th><th>Sujet modifié </th><th>modification   </th></tr></thead>
-   {% for modif in object_list %}
-   		<tr>
-   		<td width="25%">  {{ modif.date}}</td>
-   		<td width="25%">   {{ modif.user}} </td>
-   		<td width="25%">
-			{% if modif.subject.first_name %}
-			<a href="/individu/{{modif.subject.id}}">  {{ modif.subject.first_name}} {{ modif.subject.last_name}}</a> </td>
-			{% elif  modif.subject.city %}
-			<a href="/lieu/{{modif.subject.id}}">  {{ modif.subject.city}}, {{ modif.subject.country}}, {{ modif.subject.department}},{{ modif.subject.church}}</a> </td>
-			{% else %}
-			<a > Objet supprimé</a> </td>
-			{% endif %}
-   		<td width="25%">   {{ modif.note}}		</td>
-        </tr>
-		<!--<p><a href="/individu/{{individu.id}}">  {{ individu.last_name}} {{ individu.first_name }}</a></p> -->
-	{% endfor %}
-	</table>
-{% include 'menu/includes/htmlsnippet.html' %}
-{% else %}
-  <p>Vous n'êtes pas connecté!</p>
-  <a href="{% url 'login' %}">Se connecter</a>
-{% endif %}
+	{% if user.is_authenticated %}
+	   	<table summary="list_modif" border="1" id="modif">
+			<thead><tr><th> Date  </th><th>Utilisateur   </th><th>Sujet modifié </th><th>modification   </th></tr></thead>
+			{% for modif in object_list %}
+				<tr>
+				<td width="25%">  {{ modif.date}}</td>
+				<td width="25%">   {{ modif.user}} </td>
+				<td width="25%">
+					{% if modif.subject.first_name %}
+						<a href="/individu/{{modif.subject.id}}">  {{ modif.subject.first_name}} {{ modif.subject.last_name}}</a> </td>
+					{% elif  modif.subject.city %}
+						<a href="/lieu/{{modif.subject.id}}">  {{ modif.subject.city}}, {{ modif.subject.country}}, {{ modif.subject.department}},{{ modif.subject.church}}</a> </td>
+					{% else %}
+						<a > Objet supprimé</a> </td>
+					{% endif %}
+				<td width="25%">   {{ modif.note}}		</td>
+				</tr>
+			{% endfor %}
+		</table>
+		{% include 'menu/includes/htmlsnippet.html' %}
+	{% else %}
+	  <p>Vous n'êtes pas connecté!</p>
+	  <a href="{% url 'login' %}">Se connecter</a>
+	{% endif %}
 {% endblock %}
 

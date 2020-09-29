@@ -1,172 +1,112 @@
 {% extends "menu/header.html" %}
 {% block content %}
-{% load static %}
-{% load has_group %}
-<!--
-<head>
-    <script type="text/javascript" src="https://github.com/ariutta/svg-pan-zoom/blob/master/dist/svg-pan-zoom.js"></script>
-  </head>-->
-
-  <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
-
-  <p><h10> Créé le {{ individual.date_of_creation }} par {{ individual.user_who_created }} </h10>  </p>
-  <p><h10> Mis à jour le {{ individual.date_of_last_update }} par {{ individual.user_who_last_updated }} </h10>  </p>
-<table summary="detail_people" border="1" id="detail">
-<tr><td width="400px">
-
-  <p><strong>Genre:</strong>{% if individual.gender == "F" %} Femme 
-                            {% elif individual.gender == "M" %} Homme
-                            {% else  %} Autre
-                            {%endif %}</p> 
-  <p><strong>Date de naissance:</strong> {% if individual.date_of_birth is not none %} {{ individual.nice_birthdate }} {%endif %}</p> 
-  <p><strong>Lieu de naissance:</strong> {% if individual.place_of_birth is not none %}{{ individual.place_of_birth }}{%endif %} </p>
-  {% if individual.is_deceased %} 
-    <p><strong>Date de décès:</strong> {% if individual.date_of_death is not none %}{{ individual.nice_deathdate }}{%endif %}</p>  
-    <p><strong>Lieu de décès:</strong>{% if individual.place_of_death is not none %} {{ individual.place_of_death }}{%endif %}</p>
-    <p><strong>Age au moment du décès:</strong> {{ individual.age }}
-  {%else %}
-     <p><strong>Age:</strong> {{ individual.age }}</p>
-   
-  {%endif %}
-  
-  
-  <p><strong>Lieu de résidence:</strong>{% if individual.place_of_residence is not none %} {{ individual.place_of_residence }}{%endif %}</p>
-  <p><strong>Métier:</strong>{% if individual.occupation is not none %} {{ individual.occupation }}{%endif %}</p>
-  <p><strong>Email:</strong>{% if individual.email is not none %} {{ individual.email }}{%endif %}</p> 
-  <p><strong>Commentaire:</strong>{% if individual.comment is not none %} {{ individual.comment }}{%endif %}</p> 
-  <p><a href="/individu/{{individual.id}}/update/">Modifier les données</a></p>
-{% if request.user|has_group:"tree_admin" or request.user == individual.user_who_created  %}
-  <p><a href="/individu/{{individual.id}}/delete/">Supprimer l'individu</a></p>
-
-   {% endif %}
-
-
-  </td><td width="400px">
-  {% if individual.image %}
-    <img src="{{ individual.image.url }}" alt="{{ individual.last_name }} {{ individual.first_name }}" width="300" />
-  {% endif %}
-</td><td>
-    {% if individual.birth_source %}
-    <img src="{{ individual.birth_source.url }}"  width="300" />
-  {% endif %}
-    </td><td>
-        {% if individual.death_source %}
-    <img src="{{ individual.death_source.url }}"  width="300" />
-
-  {% endif %}
-  </td></tr>
-  </table>
-
-
-<div class="tree">
-    <ul>{% if individual.get_parents %} Parents:
-      {% for parent in individual.get_parents %}  
-          <li>
-              {% if not parent.relation.parent1.private or request.user|has_group:"tree_admin" %}
-              <a href="/individu/{{parent.relation.parent1.id}}">  {{parent.relation.parent1}}</a>{% endif %}
-           </li>
-            <li>
-             {% if not parent.relation.parent2.private or request.user|has_group:"tree_admin" %}
-              <a href="/individu/{{parent.relation.parent2.id}}">  {{parent.relation.parent2}}</a>{% endif %}
-           </li>
-           {% endfor %}
-          <p><a href="/individu/{{individual.id}}/update_parents/">Modifier les parents</a></p>
-            {% else %}
-            <p><a href="/individu/{{individual.id}}/add_parents/">Ajouter les parents</a></p>
-         <p><a href="/individu/{{individual.id}}/update_parents/">Ajouter des parents déjà présents dans l'arbre</a></p>
+    {% load static %}
+    {% load has_group %}
+    <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
+    <p><h10> Créé le {{ individual.date_of_creation }} par {{ individual.user_who_created }} </h10>  </p>
+    <p><h10> Mis à jour le {{ individual.date_of_last_update }} par {{ individual.user_who_last_updated }} </h10>  </p>
+    <table summary="detail_people" border="1" id="detail">
+        <tr><td width="400px">
+            <p><strong>Genre:</strong>{% if individual.gender == "F" %} Femme
+                                    {% elif individual.gender == "M" %} Homme
+                                    {% else  %} Autre
+                                    {%endif %}</p>
+            <p><strong>Date de naissance:</strong> {% if individual.date_of_birth is not none %} {{ individual.nice_birthdate }} {%endif %}</p>
+            <p><strong>Lieu de naissance:</strong> {% if individual.place_of_birth is not none %}{{ individual.place_of_birth }}{%endif %} </p>
+            {% if individual.is_deceased %}
+                <p><strong>Date de décès:</strong> {% if individual.date_of_death is not none %}{{ individual.nice_deathdate }}{%endif %}</p>
+                <p><strong>Lieu de décès:</strong>{% if individual.place_of_death is not none %} {{ individual.place_of_death }}{%endif %}</p>
+                <p><strong>Age au moment du décès:</strong> {{ individual.age }}
+            {%else %}
+                <p><strong>Age:</strong> {{ individual.age }}</p>
+            {%endif %}
+            <p><strong>Lieu de résidence:</strong>{% if individual.place_of_residence is not none %} {{ individual.place_of_residence }}{%endif %}</p>
+            <p><strong>Métier:</strong>{% if individual.occupation is not none %} {{ individual.occupation }}{%endif %}</p>
+            <p><strong>Email:</strong>{% if individual.email is not none %} {{ individual.email }}{%endif %}</p>
+            <p><strong>Commentaire:</strong>{% if individual.comment is not none %} {{ individual.comment }}{%endif %}</p>
+            <p><a href="/individu/{{individual.id}}/update/">Modifier les données</a></p>
+            {% if request.user|has_group:"tree_admin" or request.user == individual.user_who_created  %}
+                <p><a href="/individu/{{individual.id}}/delete/">Supprimer l'individu</a></p>
             {% endif %}
-
- </ul>
-</div>
-
-
-  <div class="tree">
-
-    <ul>{% if individual.get_spouses %} Relations :
-
-            <!--<a href="/individu/{{individu.id}}">{{ individual.last_name }} {{ individual.first_name }}</a>-->
-        <table>
-               <tr>
-                            {% for spouses_obj in individual.get_spouses %}
-                                <ul>
-                              {% if not spouses_obj.parent1.private and not spouses_obj.parent2.private or request.user|has_group:"tree_admin"  %}
-                                    <td>
-
-                                            <a href="/individu/{{spouses_obj.parent1.id}}">{{ spouses_obj.parent1 }} </a> et <a href="/individu/{{spouses_obj.parent2.id}}">{{ spouses_obj.parent2 }}   (<a href="/individu/{{spouses_obj.id}}/update_relation/">modifier la relation (id={{spouses_obj.id}})</a>) </a>
-                                            {% if spouses_obj.date_of_marriage is not none and spouses_obj.date_of_marriage != '' %} mariés le {{ spouses_obj.nice_marriagedate}} {% endif %}
-                                            {% if spouses_obj.place_of_marriage is not none and spouses_obj.place_of_marriage != '' %} à {{ spouses_obj.place_of_marriage}}{% endif %}
-                                            {% if individual.get_children  %}
-                                                <ul>
-                                                    {% for child_obj in individual.get_children %}
-                                                        {% if not child_obj.child.private  or request.user|has_group:"tree_admin" %}
-                                                          {% if child_obj.relation.parent1 == spouses_obj.parent1 and child_obj.relation.parent2 == spouses_obj.parent2 %}
-                                                              <li>
-                                                                <a href="/individu/{{child_obj.child.id}}">  {{child_obj.child}}</a>
-
-                                                                  <!--{% include 'menu/child.html' with child=child_obj %}-->
-                                                              </li>
-                                                          {% endif %}
-                                                       {% endif %}
-                                                   {% endfor %}
-                                                </ul>
-                                            {% endif %}
-                                            <ul> <a href="/individu/{{spouses_obj.id}}/add_children/">Ajouter un(e) enfant</a></ul>
-                                            <ul> <a href="/individu/{{spouses_obj.id}}/add_existing_children/">Ajouter un(e) enfant déjà dans l'arbre</a></ul>
-                                        </td>
-                                        <td>
-                                         <a> {% if spouses_obj.marriage_source.name %}
-                                                        <img src="{{ spouses_obj.marriage_source.url }}" alt="certificat de ùariage" width="300" />
-                                                      {% endif %}</a>
-                                        </td>
-                                {% endif %}
-                                    </ul>
-                    </tr>
-                            {% endfor %}
-        </table>
-    {% endif %}</ul>
-      <ul> <a href="/individu/{{individual.id}}/add_relation/">Ajouter un(e) partenaire</a></ul>
-</div>
-
-
- <div class="tree_graph">
-  {% if request.user|has_group:"tree_admin" %}
-  {{  individual.get_tree | safe }}
-  {% else %}
-   {{  individual.get_tree_hide | safe }}
-   {% endif %} 
-
-
-  </div>
-  {% include 'menu/includes/htmlsnippet.html' %}
-
-<!--
- <script>
-      // Don't use window.onLoad like this in production, because it can only listen to one function.
-      window.onload = function() {
-        svgPanZoom('#{{individual.get_tree.get_id}}', {
-          zoomEnabled: true,
-          controlIconsEnabled: true,
-          fit: true,
-          center: true,
-          minZoom: 0.1
-        });
-      };
-    </script>
-
-
-<img src="menu/templates/test.svg">
-
-<img src="smily.svg">
--->
-<!--
-  <div style="margin-left:20px;margin-top:20px">
-    <h4>Copies</h4>
-    {% for copy in book.bookinstance_set.all %}
-    <hr>
-    <p class="{% if copy.status == 'a' %}text-success{% elif copy.status == 'm' %}text-danger{% else %}text-warning{% endif %}">{{ copy.get_status_display }}</p>
-    {% if copy.status != 'a' %}<p><strong>Due to be returned:</strong> {{copy.due_back}}</p>{% endif %}
-    <p><strong>Imprint:</strong> {{copy.imprint}}</p>
-    <p class="text-muted"><strong>Id:</strong> {{copy.id}}</p>
-    {% endfor %}
-  </div> -->
+        </td><td width="400px">
+            {% if individual.image %}
+                <img src="{{ individual.image.url }}" alt="{{ individual.last_name }} {{ individual.first_name }}" width="300" />
+            {% endif %}
+        </td><td>
+            {% if individual.birth_source %}
+                <img src="{{ individual.birth_source.url }}"  width="300" />
+            {% endif %}
+        </td><td>
+            {% if individual.death_source %}
+                <img src="{{ individual.death_source.url }}"  width="300" />
+            {% endif %}
+        </td></tr>
+    </table>
+    <div class="tree">
+        <ul>{% if individual.get_parents %} Parents:
+                  {% for parent in individual.get_parents %}
+                        <li>
+                          {% if not parent.relation.parent1.private or request.user|has_group:"tree_admin" %}
+                          <a href="/individu/{{parent.relation.parent1.id}}">  {{parent.relation.parent1}}</a>{% endif %}
+                        </li>
+                        <li>
+                         {% if not parent.relation.parent2.private or request.user|has_group:"tree_admin" %}
+                          <a href="/individu/{{parent.relation.parent2.id}}">  {{parent.relation.parent2}}</a>{% endif %}
+                        </li>
+                        {% endfor %}
+                        <p><a href="/individu/{{individual.id}}/update_parents/">Modifier les parents</a></p>
+            {% else %}
+                <p><a href="/individu/{{individual.id}}/add_parents/">Ajouter les parents</a></p>
+                <p><a href="/individu/{{individual.id}}/update_parents/">Ajouter des parents déjà présents dans l'arbre</a></p>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="tree">
+        <ul>{% if individual.get_spouses %} Relations :
+            <table>
+                <tr>
+                    {% for spouses_obj in individual.get_spouses %}
+                        <ul>
+                            {% if not spouses_obj.parent1.private and not spouses_obj.parent2.private or request.user|has_group:"tree_admin"  %}
+                                <td>
+                                    <a href="/individu/{{spouses_obj.parent1.id}}">{{ spouses_obj.parent1 }} </a> et <a href="/individu/{{spouses_obj.parent2.id}}">{{ spouses_obj.parent2 }}   (<a href="/individu/{{spouses_obj.id}}/update_relation/">modifier la relation (id={{spouses_obj.id}})</a>) </a>
+                                    {% if spouses_obj.date_of_marriage is not none and spouses_obj.date_of_marriage != '' %} mariés le {{ spouses_obj.nice_marriagedate}} {% endif %}
+                                    {% if spouses_obj.place_of_marriage is not none and spouses_obj.place_of_marriage != '' %} à {{ spouses_obj.place_of_marriage}}{% endif %}
+                                    {% if individual.get_children  %}
+                                        <ul>
+                                            {% for child_obj in individual.get_children %}
+                                                {% if not child_obj.child.private  or request.user|has_group:"tree_admin" %}
+                                                  {% if child_obj.relation.parent1 == spouses_obj.parent1 and child_obj.relation.parent2 == spouses_obj.parent2 %}
+                                                      <li>
+                                                        <a href="/individu/{{child_obj.child.id}}">  {{child_obj.child}}</a>
+                                                      </li>
+                                                  {% endif %}
+                                               {% endif %}
+                                           {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                    <ul> <a href="/individu/{{spouses_obj.id}}/add_children/">Ajouter un(e) enfant</a></ul>
+                                    <ul> <a href="/individu/{{spouses_obj.id}}/add_existing_children/">Ajouter un(e) enfant déjà dans l'arbre</a></ul>
+                                </td>
+                                <td>
+                                     <a> {% if spouses_obj.marriage_source.name %}
+                                            <img src="{{ spouses_obj.marriage_source.url }}" alt="certificat de ùariage" width="300" />
+                                         {% endif %}</a>
+                                </td>
+                            {% endif %}
+                        </ul>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% endif %}</ul>
+        <ul> <a href="/individu/{{individual.id}}/add_relation/">Ajouter un(e) partenaire</a></ul>
+    </div>
+    <div class="tree_graph">
+      {% if request.user|has_group:"tree_admin" %}
+        {{  individual.get_tree | safe }}
+      {% else %}
+        {{  individual.get_tree_hide | safe }}
+      {% endif %}
+    </div>
+    {% include 'menu/includes/htmlsnippet.html' %}
 {% endblock %}

@@ -1,19 +1,5 @@
 {% block content %}
- <form id="searchform" action="{% url 'Liste des lieux' %}" method="get" accept-charset="utf-8">
-      <!--<button class="searchbutton" type="submit">
-        <i class="fa fa-search"></i>
-      </button>-->
-      <input class="searchfield" id="searchbox" name="q" type="text" value="{{ request.GET.q }}" placeholder="Chercher">
-    </form> 
-
-<!--
-    <form action="{% url 'Liste des individus' %}" method="post">
-    <input id="name" type="text" name="name">
-    <input type="submit" value="Valider"> 
-
-    <form method="GET" action="{% url 'Liste des individus' %}" id="searchform">
-    <input class="searchfield" id="searchbox" name="q" type="text" value="{{ request.GET.q }}" placeholder="Chercher ..."/>
+    <form id="searchform" action="{% url 'Liste des lieux' %}" method="get" accept-charset="utf-8">
+        <input class="searchfield" id="searchbox" name="q" type="text" value="{{ request.GET.q }}" placeholder="Chercher">
     </form>
-    -->
-
 {% endblock %}

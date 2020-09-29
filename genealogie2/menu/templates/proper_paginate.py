@@ -2,7 +2,6 @@ from django import template
 
 register = template.Library()
 
-
 @register.filter(name='proper_paginate')
 def proper_paginate(paginator, current_page, neighbors=10):
     if paginator.num_pages > 2*neighbors:
