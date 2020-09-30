@@ -361,7 +361,7 @@ def update_individu(request, id=None):
         return HttpResponseRedirect(instance.get_absolute_url())
     context={
                 "form":form,}
-    return render(request, 'menu/individual_detail_update.html', context )
+    return render(request, 'menu/update_from_form.html', context )
 
 
 def update_parents(request, id=None):
@@ -457,7 +457,7 @@ def update_place(request, id=None):
         return HttpResponseRedirect(instance.get_absolute_url())
     context={
                 "form":form,}
-    return render(request, 'menu/place_detail_update.html', context )
+    return render(request, 'menu/update_from_form.html', context )
 
 def get_first_query(myDict):
     outDict={}
