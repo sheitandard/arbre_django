@@ -2,14 +2,12 @@ from django.shortcuts import render
 from .forms import ReadFileForm, IndividualForm, RelationshipForm, ChildForm, ParentForm, LocationForm
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-import os
 from .models import Location, Individual, Relationship, Child, month_list, Modification
 from django.contrib.auth.models import Group
 from django.views import generic
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect,HttpResponse, JsonResponse
 from django.views.generic.edit import UpdateView, FormView, DeleteView
-from django.core.files import File
 
 
 pays_connus = ["FRANCE","POLOGNE","ALLEMAGNE","ALGERIE", "ITALIE","ESPAGNE","ROYAUNE-UNI", "ANGLETERRE"]
@@ -352,7 +350,7 @@ def update_individu(request, id=None):
     instance=get_object_or_404(Individual,id=id)
     form=IndividualForm(request.POST or None, request.FILES or None,instance=instance)
 
-    if form.is_valid():# and rform.is_valid() and cform.is_valid():
+    if form.is_valid():
         instance=form.save(commit=False)
         instance.user_who_last_updated = request.user
         instance.save()
@@ -363,43 +361,6 @@ def update_individu(request, id=None):
                 "form":form,}
     return render(request, 'menu/update_from_form.html', context )
 
-
-def update_parents(request, id=None):
-    instance=get_object_or_404(Individual,id=id)
-
-    try :
-        instance_child=Child.objects.get(child=instance)
-
-    except  Child.DoesNotExist:
-
-        instance_child = Child(child=instance, relation=None)
-
-    form = ParentForm(request.POST or None, instance=instance_child)
-    print("request.POST",request.POST)
-
-    if form.is_valid():
-        instance_child=form.save(commit=False)
-        instance_child.save()
-        m = Modification(subject=instance, user=request.user, note="parents modifiés")
-        m.save()
-        return HttpResponseRedirect(instance.get_absolute_url())
-
-    elif len(request.POST)>0:
-        if "relation" in  request.POST:
-            try:
-                relation_found = get_object_or_404(Relationship,id=request.POST["relation"])
-                instance_child.relation = relation_found
-                m = Modification(subject=instance, user=request.user, note="parents modifiés pour: " + str(instance))
-                m.save()
-                instance_child.user_who_last_updated = request.user
-                instance_child.save()
-                return HttpResponseRedirect(instance.get_absolute_url())
-            except Relationship.DoesNotExist:
-                print("weird, this relationship cannot be found")
-    context={
-                "form":form}
-    return render(request, 'menu/individual_parent_update.html', context )
-
 def remove_parents(request, id=None, id2=None):
     instance = get_object_or_404(Individual, id=id)
     link = Child.objects.get(Q(child=id))
@@ -407,7 +368,6 @@ def remove_parents(request, id=None, id2=None):
     instance.save()
 
     if link.relation.parent1 is not None and link.relation.parent1.id==int(id2):
-        print("here")
         m = Modification(subject=instance, user=request.user, note="Suppression d'un lien de parenté avec " +link.relation.parent1.first_name+" "+link.relation.parent1.last_name)
         link.relation.parent1=None
         m.save()
@@ -438,7 +398,7 @@ def remove_parents(request, id=None, id2=None):
 
     context = {
         "form": form, }
-    return render(request, 'menu/individual_parent_update.html', context)
+    return render(request, 'menu/individual_add_parent.html', context)
 
 
 
@@ -463,7 +423,6 @@ def get_first_query(myDict):
     outDict={}
     for key in myDict:
         outDict[key]=myDict.getlist(key)[0]
-    print(outDict)
     return outDict
 
 def transform_date(str_date):
@@ -478,74 +437,37 @@ def transform_date(str_date):
 
 def add_parents(request, id=None):
     print("add_parent")
-    print(request.POST)
-    instance=get_object_or_404(Individual,id=id)
+    instance = get_object_or_404(Individual, id=id)
     try:
         instance_child=Child.objects.get(child=instance)
+        print("enfant trouvé")
     except Child.DoesNotExist:
-        #instance_child = Child(child=instance, parent1=None, parent2=None)
         instance_child=Child(child=instance, relation=Relationship(parent1=None, parent2=None))
 
-    form1 = IndividualForm(None, instance=instance_child.relation.parent1)
-    form2 = IndividualForm(None,instance=instance_child.relation.parent2)
+    relation = instance_child.relation
+    form = ParentForm(request.POST or None, instance=relation)
     errors = []
-
-
     if 'save' in request.POST:
-            print(request.POST)
-            print(get_first_query(request.POST))
-            form1 = IndividualForm(get_first_query(request.POST) or None)
-            form2 = IndividualForm(request.POST or None)
-            if form2.is_valid() and form1.is_valid():
-                form2.clean()
-                form1.clean()
+        form = ParentForm(request.POST or None)
+        if  form.is_valid():
+            form.clean()
+            relation = form.save(commit=False)
+            relation.save()
+            m = Modification(subject=relation.parent1, user=request.user,
+                             note="ajout d'une relation avec " + relation.parent2.first_name + " " +  relation.parent2.last_name)
+            m.save()
+            instance_child.relation = relation
+            instance_child.save()
+            m = Modification(subject=instance, user=request.user, note="ajout ou modification d'une relation parent-enfant")
+            m.save()
+            return HttpResponseRedirect(instance.get_absolute_url())
 
-                if instance_child.relation.parent2 is None:
-                    mother = form2.save(commit=False)
+    context = {
+        "form": form,
+        "errors": errors,
+    }
+    return render(request, 'menu/individual_add_parent.html', context)
 
-                    mother.date_of_birth=transform_date(mother.date_of_birth)
-                    mother.date_of_death = transform_date(mother.date_of_death)
-                    mother.user_who_last_updated = request.user
-                    mother.user_who_created = request.user
-                    mother.save()
-                    m = Modification(subject=mother, user=request.user, note="ajout de la mère de "+instance.first_name + " "+instance.last_name)
-                    m.save()
-
-                    #instance_child.parent2=mother
-                    #instance_child.save()
-                else:
-                    mother=instance_child.relation.parent2
-                if instance_child.relation.parent1 is None:
-                    father = form1.save(commit=False)
-                    father.date_of_birth = transform_date(father.date_of_birth)
-                    father.date_of_death = transform_date(father.date_of_death)
-                    father.user_who_last_updated = request.user
-                    father.user_who_created = request.user
-                    father.save()
-                    m = Modification(subject=father, user=request.user, note="ajout du père de "+instance.first_name + " "+instance.last_name)
-                    m.save()
-                    m = Modification(subject=instance, user=request.user, note="ajout d'une relation parent-enfant")
-                    m.save()
-                else:
-                    father=instance_child.relation.parent1
-                p = Relationship(parent1=father, parent2=mother, status='mariage ou Pacs')
-                p.save()
-                instance_child.relation=p
-                instance_child.save()
-                m = Modification(subject=father, user=request.user, note="ajout d'une relation avec " +mother.first_name + " "+mother.last_name)
-                m.save()
-                return HttpResponseRedirect(instance.get_absolute_url())
-
-    elif 'Ajouter un lieu' in request.POST.values():
-        add_location_html(request, old_request=request)
-    print("errors",errors)
-
-    context={
-                "form1":form1,
-                "form2":form2,
-                "errors":errors,
-                }
-    return render(request, 'menu/individual_parent_add.html', context )
 
 def add_relationship(request, id=None):
     print("add_relation")
@@ -572,7 +494,6 @@ def add_relationship(request, id=None):
                 instance.user_who_last_updated = request.user
                 instance.save()
                 relation.save()
-                print(relation)
                 m = Modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire existant pour "+instance.first_name + " "+instance.last_name)
                 m.save()
             return HttpResponseRedirect(instance.get_absolute_url())
@@ -609,7 +530,7 @@ def add_partner(request, id=None):
     context={
                 "form":form
                 }
-    return render(request, 'menu/individual_partner_add.html', context )
+    return render(request, 'menu/individual_add.html', context )
 
 def update_relation(request, id=None):
     print("update_relation")
@@ -648,6 +569,7 @@ class RelationDelete(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
+        print("deleting following object:")
         print(self.object)
 
         try:
@@ -695,7 +617,7 @@ def add_children(request, id=None):
     context = {
         "form": form
     }
-    return render(request, 'menu/individual_partner_add.html', context)
+    return render(request, 'menu/individual_add.html', context)
 
 def add_existing_children(request, id=None):
     print("add_existing_children")
@@ -756,199 +678,36 @@ def add_location_html(request):
                 }
     return render(request, 'menu/location_add.html', context )
 
+def add_individual_html(request):
+    form = IndividualForm(None)
+    print(request.POST)
+    if 'save_individual' in request.POST:
+            form = IndividualForm(request.POST or None)
+            if form.is_valid() :
+                print("form is valid")
+                form.clean()
+                ind = form.save(commit=False)
+                if ind.gender is None:
+                    ind.gender='A'
+                ind.save()
+                m = Modification(subject=ind, user=request.user, note="ajout d'un nouvelle individu : "+ ind.first_name + " " + ind.last_name)
+                m.save()
+                #parameters_as_string='id='+str(ind.id)+',gender='+ind.gender
+                parameters_as_string = 'id=' + str(ind.id)
+                print(parameters_as_string)
+                return HttpResponse('<script type="text/javascript">window.opener.reload_individuals('+parameters_as_string+');window.close();</script>')
+
+    context={
+                "form":form,
+                }
+    return render(request, 'menu/individual_add.html', context )
+
 def place_list(request):
     p = Location.objects.all()
     p2=list(p.values('id','city','department','country','church'))
     return JsonResponse({"places":p2})
 
-def import_sources(request):
-    paths=[]
-    paths.append("C:/Users/sheitan/Documents/genealogie/Tama")
-    paths.append("C:/Users/sheitan/Documents/genealogie/Rigot")
-    paths.append("C:/Users/sheitan/Documents/genealogie/Charrayre")
-    paths.append("C:/Users/sheitan/Documents/genealogie/Dard")
-    paths.append("C:/Users/sheitan/Documents/genealogie/Voye/send")
-    paths.append("C:/Users/sheitan/Documents/genealogie/dans genoom")
-    paths.append("C:/Users/sheitan/Documents/genealogie/cabanel")
-    mariage_all = Relationship.objects.all()
-    individual_all=Individual.objects.all()
-    nb_mariage_success = 0
-    nb_mariage_fail = 0
-    nb_deces_fail = 0
-    nb_deces_success = 0
-    nb_deces = 0
-    nb_naissance=0
-    nb_naissance_success = 0
-    nb_naissance_fail = 0
-    for path in paths:
-        print(path)
-        list_files = os.listdir(path)
-        for file in list_files:
-            if file.endswith(".jpg") or file.endswith(".png"):
-                element = file.split(".")[0].split(" ")
-                type = "naissance"
-                if "mariage" in file or "Mariage" in file:
-                    type = "mariage"
-                elif ("deces" or "décès") in file and "naissance" not in file:
-                    type="deces"
-                if type == "mariage":
-
-                    names=["","","",""]
-                    eli = len(names)-1
-                    for el in range(len(element)-1,-1,-1):
-                        if element[el] not in ("de","et","mariage","avec"):
-                            if names[eli]!="" :
-                                names[eli]=names[eli]+" "
-                            names[eli]=names[eli]+element[el].split("'")[-1]
-                        if eli==1 or eli==3 or element[el] in ("et","avec"):
-                            eli=eli-1
-
-                    firstname1,lastname1,firstname2,lastname2=names
-                    try:
-                        mariage=mariage_all.filter(parent1__in=Individual.objects.filter(Q(last_name__icontains=lastname1)))
-                        if len(mariage) > 1:
-                            mariage = mariage.filter(parent2__in= Individual.objects.filter(Q(last_name__icontains=lastname2)))
-                        if len(mariage)>1:
-                            mariage = mariage.filter(parent1__in=Individual.objects.filter(Q(first_name__icontains=firstname1.split(" ")[-1])))
-
-                        if len(mariage) > 1:
-                            mariage = mariage.filter(parent2__in= Individual.objects.filter( Q(first_name__icontains=firstname2.split(" ")[-1])))
-                        if len(mariage)==0:
-                            mariage = mariage_all.filter(
-                                parent1__in=Individual.objects.filter(Q(last_name__icontains=lastname2)))
-                            if len(mariage) > 1:
-                                mariage = mariage.filter(
-                                    parent2__in=Individual.objects.filter(Q(last_name__icontains=lastname1)))
-                            if len(mariage) > 1:
-                                mariage = mariage.filter(parent1__in=Individual.objects.filter(
-                                    Q(first_name__icontains=firstname2.split(" ")[-1])))
-
-                            if len(mariage) > 1:
-                                mariage = mariage.filter(
-                                    parent2__in=Individual.objects.filter(Q(first_name__icontains=firstname1.split(" ")[-1])))
-                    except Relationship.DoesNotExist:
-                        print("no mariage")
-                    if len(mariage)!=1:
-                        print("echec mariage")
-                        nb_mariage_fail=nb_mariage_fail+1
-                        print(path)
-                        try:
-                            print(file)
-                        except UnicodeEncodeError:
-                            pass
-                    else:
-                        file_name=os.path.basename(file)
-                        if mariage[0].marriage_source.name is None:
-                            nb_mariage_success=nb_mariage_success+1
-                            full_path=path+"/"+file
-                            with open(full_path, 'rb') as f:
-                                print("replacing file now")
-                                django_file=File(f)
-                                mariage[0].marriage_source.save(file_name, django_file, save=True)
-                elif type=="deces":
-                    nb_deces=nb_deces+1
-                    lastname=element[0]
-                    firstname=element[1].split(",")[0]
-                    i=2
-                    year_birth=None
-                    year_death=None
-                    while i<len(element):
-                        if "deces" not in element[i] and "décès" not in element[i]:
-                            if "1" not in element[i]:
-                                firstname=firstname+" "+element[i].split(",")[0]
-                            elif "-" in element[i]:
-                                year_birth=element[i].split("-")[0]
-                                year_death=element[i].split("-")[1].split(",")[0]
-                            else:
-                                year_birth = element[i].split(",")[0]
-                        i=i+1
-                    individu = individual_all.filter(Q(first_name__icontains=firstname) & Q(last_name__icontains=lastname))
-                    if year_birth:
-                        individu = individu.filter(Q(date_of_birth__icontains=year_birth))
-                    if year_death:
-                        individu = individu.filter(Q(date_of_death__icontains=year_death))
-                    else:
-                        individu = individu.filter(Q(date_of_death__isnull=False))
-                    if len(individu)>1:
-                        individu = individu.filter( Q(first_name=firstname))
-
-
-                    if len(individu) != 1:
-                        print("echec pour trouver deces")
-                        nb_deces_fail=nb_deces_fail+1
-                        try:
-                            print(firstname, lastname)
-                            print(file)
-                        except:
-                            print("weird name")
-
-                    elif individu[0].death_source.name is None:
-                        nb_deces_success = nb_deces_success + 1
-                        full_path = path + "/" + file
-                        file_name = os.path.basename(file)
-                        with open(full_path, 'rb') as f:
-                            print("replacing file now")
-                            django_file = File(f)
-                            individu[0].death_source.save(file_name, django_file, save=True)
-
-                elif type=="naissance":
-                    nb_naissance = nb_naissance + 1
-                    lastname = element[0]
-                    firstname = element[1].split(".")[0]
-                    i = 2
-                    year_birth = None
-                    year_death = None
-                    # print(len(element),i)
-                    while i < len(element):
-                            if "naissance" in element[i]:
-                                break
-                            elif "1" not in element[i]:
-                                firstname = firstname + " " + element[i].split(".")[0]
-                            elif "-" in element[i]:
-                                year_birth = element[i].split("-")[0]
-                                year_death = element[i].split("-")[1].split(".")[0]
-                            else:
-                                year_birth = element[i].split(".")[0]
-                            i = i + 1
-                    individu = individual_all.filter( Q(last_name__icontains=lastname))
-                    first_name_split=firstname.split(" ")
-
-                    for name in first_name_split:
-                        if len(individu)>1:
-                            individu = individu.filter(Q(first_name__icontains=name))
-                    if year_birth:
-                        individu = individu.filter(Q(date_of_birth__icontains=year_birth))
-                    else:
-                        individu = individu.filter(Q(date_of_birth__isnull=False))
-                    if year_death:
-                        individu = individu.filter(Q(date_of_death__icontains=year_death))
-
-                    if len(individu) > 1:
-                        individu = individu.filter(Q(first_name=firstname))
-                    if len(individu) != 1:
-                        print("echec pour trouver naissance")
-                        nb_naissance_fail = nb_naissance_fail + 1
-                        try:
-                            print(firstname, lastname)
-                            print(file)
-                        except:
-                            print("weird name")
-                        print(year_birth, year_death)
-
-                    elif individu[0].birth_source.name is None:
-                        nb_naissance_success = nb_naissance_success + 1
-                        full_path = path + "/" + file
-                        file_name = os.path.basename(file)
-                    else:
-                        nb_naissance_fail = nb_naissance_fail + 1
-                        #print("y'a déjà un fichier pour la naissance!")
-
-    print("nb naissance",nb_naissance )
-    print("sucess naissance",nb_naissance_success )
-    print("fail naissance",nb_naissance_fail )
-    print("nb deces",nb_deces )
-    print("sucess deces",nb_deces_success )
-    print("fail deces",nb_deces_fail )
-    print("sucess mariage",nb_mariage_success )
-    print("fail mariage",nb_mariage_fail )
-    return 0
+def individual_list(request):
+    p = Individual.objects.all()
+    p2=list(p.values('id','first_name','last_name','date_of_birth','date_of_death'))
+    return JsonResponse({"individuals":p2})

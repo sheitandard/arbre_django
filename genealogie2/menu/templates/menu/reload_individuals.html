@@ -1,0 +1,38 @@
+{% block content %}
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" >
+    function update_dropdown(dropdown,json){
+        dropdown.empty();
+        dropdown.append($('<option value="" >---------</option>'))
+        $.each(json.individuals, function(index,entry){
+            dropdown.append($('<option></option>').attr('value', entry.id).text(entry.first_name.concat(", ",entry.last_name, ": ",entry.date_of_birth,"-",entry.date_of_death)))
+         });
+    }
+    function reload_individuals(id = null){
+         $.ajax({
+            url:"individual_list",
+            data:{},
+            type:"GET",
+            dataType:"json",
+            })
+         .done(function(json){
+           value_of_parent1 = $('#form_parent1').find(":selected").val();
+           value_of_parent2 = $('#form_parent2').find(":selected").val();
+           update_dropdown($("#form_parent1 select"), json);
+           update_dropdown($("#form_parent2 select"), json);
+           if(value_of_parent1===""){
+                $("#form_parent1 option[value="+id+"]").prop('selected', true);
+                $("#form_parent2 option[value='"+value_of_parent2+"']").prop('selected', true);
+           }
+           else {
+                $("#form_parent1 option[value='"+value_of_parent1+"']").prop('selected', true);
+                $("#form_parent2 option[value="+id+"]").prop('selected', true);
+                }
+           })
+         .fail(function(){
+                alert("Error!");
+               });
+    }
+    </script>
+    <button  onclick="reload_individuals();">Rafraichir</button>
+{% endblock %}

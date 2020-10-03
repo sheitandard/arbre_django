@@ -9,13 +9,6 @@ class ReadFileForm(forms.Form):
 class LocationForm(ModelForm):
     class Meta:
         model = Location
-        fields = ["city",
-                  "country",
-                  "department",
-                  "church",
-                  "city_today",
-                  "country_today",
-                ]
         labels = {
                   "city":"Ville",
                   "country":"Pays",
@@ -23,11 +16,11 @@ class LocationForm(ModelForm):
                   "church":"Eglise",
                   "city_today":"Ville actuelle",
                   "country_today":"Pays actuel",}
+        fields = list(labels.keys())
 
     def clean(self):
         cleaned_data = super().clean()
         try:
-            print( cleaned_data)
             p = Location.objects.get(city= cleaned_data.get("city"), country= cleaned_data.get("country"),
                                      church= cleaned_data.get("church"), department= cleaned_data.get("department"))
             self.add_error('city', "Le lieu existe déjà dans la base de données!")
@@ -40,22 +33,6 @@ class LocationForm(ModelForm):
 class IndividualForm(ModelForm):
     class Meta:
         model = Individual
-        fields = ["first_name",
-                "last_name",
-                "gender",
-                "is_deceased",
-                "image",
-                "date_of_birth",
-                "place_of_birth",
-                "date_of_death",
-                "place_of_death",
-                "place_of_residence",
-                "birth_source",
-                "death_source",
-                "occupation",
-                "email",
-                "comment"
-        ]
         labels = {
                 "first_name":"Prénom(s)",
                 "last_name":"Nom",
@@ -65,13 +42,14 @@ class IndividualForm(ModelForm):
                 "date_of_birth":"Date de naissance",
                 "place_of_birth":"Lieu de naissance",
                 "birth_source":"Certificat de naissance",
-                 "death_source":"Certificat de décès",
+                "death_source":"Certificat de décès",
                 "date_of_death":"Date du décès",
                 "place_of_death": "Lieu du décès",
                 "place_of_residence":"Lieu de résidence",
                 "occupation":"Métier",
                 "email":"Email",
                 "comment":"Commentaire"}
+        fields = list(labels.keys())
 
     def clean(self):
             cleaned_data = super().clean()
@@ -91,14 +69,6 @@ class IndividualForm(ModelForm):
 class RelationshipForm(ModelForm):
     class Meta:
         model = Relationship
-        fields = [  "parent1",
-                    "parent2",
-                    "status",
-                    "date_of_marriage",
-                    "place_of_marriage",
-                    "date_of_divorce",
-                    "marriage_source",
-                    "divorce_source"]
         labels = {
             "parent1":"1ère personne",
             "parent2":"2e personne",
@@ -109,21 +79,20 @@ class RelationshipForm(ModelForm):
             "marriage_source":"Certificat de mariage",
             "divorce_source":"Certificat de divorce"
         }
+        fields = list(labels.keys())
 
 class ChildForm(ModelForm):
     class Meta:
         model = Child
-        fields = [
-                  "child"
-                ]
-        labels = {
-            "child":"Enfant",}
+        labels = {"child":"Enfant",}
+        fields = list(labels.keys())
+
 
 class ParentForm(ModelForm):
     class Meta:
-        model = Child
-        fields = ["relation",
-                  "child"
-                ]
+        model = Relationship
         labels = {
-            "relation":"Couple"}
+            "parent1":"1ère personne",
+            "parent2":"2e personne",
+        }
+        fields = list(labels.keys())

@@ -6,6 +6,8 @@ from svgwrite.container import Hyperlink
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import fields
+from django.utils import timezone
+import pytz
 
 
 GENDER_CHOICES = (
@@ -53,12 +55,12 @@ class Modification(models.Model):
     subject = fields.GenericForeignKey('content_type', 'object_id')
     user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     date=models.DateTimeField()
-    test=models.DateTimeField(null=True)
+    #test=models.DateTimeField(null=True)
     note= models.CharField(max_length=100,null=True, blank=True)
 
     def save(self, *args, **kwargs):
         ''' On save, update timestamps '''
-        self.date = datetime.now()
+        self.date = timezone.now()
         return super(Modification, self).save(*args, **kwargs)
 
 class Location(models.Model):
@@ -68,7 +70,6 @@ class Location(models.Model):
     church = models.CharField(max_length=30,null=True, blank=True)
     city_today = models.CharField(max_length=40,null=True, blank=True)
     country_today = models.CharField(max_length=40,null=True, blank=True)
-    #modif = GenericRelation(Modification)
     class Meta:
         ordering = ["country", "city", "church"]
         verbose_name_plural = "Place"
@@ -106,8 +107,8 @@ class Individual(models.Model):
     email = models.CharField(max_length=30,null=True, blank=True)
     date_of_creation = models.DateTimeField(auto_now_add=True)
     date_of_last_update = models.DateTimeField(auto_now=True)
-    user_who_created =  models.ForeignKey(User, default=1, related_name='user_who_created')
-    user_who_last_updated = models.ForeignKey(User, default=1, related_name='user_who_last_updated')
+    user_who_created =  models.ForeignKey(User, default=1, related_name='user_who_created', on_delete=models.SET("Deleted User"))
+    user_who_last_updated = models.ForeignKey(User, default=1, related_name='user_who_last_updated', on_delete=models.SET("Deleted User"))
     birth_source=models.FileField(upload_to='uploads/src',null=True, blank=True)
     death_source = models.FileField(upload_to='uploads/src', null=True, blank=True)
     
@@ -176,7 +177,6 @@ class Individual(models.Model):
 
         except Relationship.DoesNotExist:
             pass
-        print(children)
         return children
 
     def get_parents(self):
@@ -191,11 +191,8 @@ class Individual(models.Model):
         size_font=5
         dwg = svgwrite.Drawing('test.svg', profile='full', text_anchor='middle')
         parents=self.get_parents()
-        print(parents.count())
         spouses=self.get_spouses()
-        print(spouses.count())
         children=self.get_children()
-        print(children.count())
         x_individu=50
         y_individu=60
         space_name=8
@@ -204,7 +201,6 @@ class Individual(models.Model):
         max_width=max(2,100+50*children.count()+40*(spouses.count()))
         max_heigth=(x_individu+space_name)*3
         dwg.viewbox(width=max_width, height=max_heigth)
-        print(max_width,max_heigth)
         link = Hyperlink(str(self.id), target='_top')
         link.add(dwg.text("".join(self.get_first_name(is_admin)), insert=(x_individu, y_individu), fill='black', text_anchor='middle', font_size=str(size_font-1) + "px"))
         link.add(dwg.text("".join(self.get_last_name(is_admin)), insert=(x_individu, y_individu+space_name), fill='black', text_anchor='middle', font_size=str(size_font) + "px"))

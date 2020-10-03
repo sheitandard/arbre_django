@@ -54,10 +54,9 @@
                           <a href="/individu/{{parent.relation.parent2.id}}">  {{parent.relation.parent2}}</a>{% endif %}
                         </li>
                         {% endfor %}
-                        <p><a href="/individu/{{individual.id}}/update_parents/">Modifier les parents</a></p>
+                        <p><a href="/individu/{{individual.id}}/add_parents/">Modifier les parents</a></p>
             {% else %}
                 <p><a href="/individu/{{individual.id}}/add_parents/">Ajouter les parents</a></p>
-                <p><a href="/individu/{{individual.id}}/update_parents/">Ajouter des parents déjà présents dans l'arbre</a></p>
             {% endif %}
         </ul>
     </div>

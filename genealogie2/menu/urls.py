@@ -13,7 +13,6 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-#from django.urls import path
 from django.conf.urls import url, include
 from . import views, function
 
@@ -26,7 +25,6 @@ urlpatterns = [
 	url('export_gedcom_with_media/$', function.export_gedcom_with_media, name='export_gedcom_with_media'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
-	url('^individu/(?P<id>\d+)/update_parents/$', views.update_parents, name = 'update_parents'),
     url('^individu/(?P<id>\d+)/remove_parents/(?P<id2>\d+)$', views.remove_parents, name='remove_parents'),
 	url('^individu/(?P<id>\d+)/add_parents/$', views.add_parents, name='add_parents'),
 	url('^individu/(?P<id>\d+)/add_relation/$', views.add_relationship, name='add_relation'),
@@ -39,7 +37,9 @@ urlpatterns = [
 	url('^lieu/(?P<pk>\d+)$', views.PlaceDetailView.as_view(), name='detail_lieu') ,
 	url('^lieu/(?P<id>\d+)/update/$', views.update_place, name='update_lieu'),
 	url('.*/add_location', views.add_location_html, name='add_location'),
+	url('.*/individual_add', views.add_individual_html, name='individual_add'),
 	url('.*place_list',views.place_list, name="place_list"),
+	url('.*individual_list', views.individual_list, name="individual_list"),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
 ]
 

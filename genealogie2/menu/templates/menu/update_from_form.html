@@ -1,9 +1,19 @@
 {% extends "menu/header.html" %}
 {% load has_group %}
+{% load startswith %}
 {% block content %}
   <body>
+     {% include 'menu/reload_places.html' %}
      <form method='POST' action='' enctype="multipart/form-data">{% csrf_token %}
-       {{ form.as_p }}
+           {% for field in form %}
+                <div class="fieldWrapper">
+                    <p>{{ field.errors }}</p>
+                    <p id="form_{{field.name}}"> {{ field.label_tag }} {{ field }}</p>
+                    {% if field.name|startswith:'place' %}
+                        <a href="menu/add_location" target="_blank">Ajouter un lieu</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
        <input type='submit' value='Valider' />
      </form>
  </body>
