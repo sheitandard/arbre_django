@@ -692,7 +692,6 @@ def add_individual_html(request):
                 ind.save()
                 m = Modification(subject=ind, user=request.user, note="ajout d'un nouvelle individu : "+ ind.first_name + " " + ind.last_name)
                 m.save()
-                #parameters_as_string='id='+str(ind.id)+',gender='+ind.gender
                 parameters_as_string = 'id=' + str(ind.id)
                 print(parameters_as_string)
                 return HttpResponse('<script type="text/javascript">window.opener.reload_individuals('+parameters_as_string+');window.close();</script>')
@@ -710,4 +709,10 @@ def place_list(request):
 def individual_list(request):
     p = Individual.objects.all()
     p2=list(p.values('id','first_name','last_name','date_of_birth','date_of_death'))
+    for individu in p2 :
+        for date in ['date_of_birth','date_of_death']:
+            if individu[date] is None or individu[date] == '':
+                individu[date]='?'
+            else:
+                individu[date] = individu[date].split()[-1]
     return JsonResponse({"individuals":p2})
