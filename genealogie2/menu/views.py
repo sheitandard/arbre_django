@@ -361,45 +361,38 @@ def update_individu(request, id=None):
                 "form":form,}
     return render(request, 'menu/update_from_form.html', context )
 
-def remove_parents(request, id=None, id2=None):
-    instance = get_object_or_404(Individual, id=id)
-    link = Child.objects.get(Q(child=id))
-    instance.user_who_last_updated = request.user
-    instance.save()
-
-    if link.relation.parent1 is not None and link.relation.parent1.id==int(id2):
-        m = Modification(subject=instance, user=request.user, note="Suppression d'un lien de parenté avec " +link.relation.parent1.first_name+" "+link.relation.parent1.last_name)
-        link.relation.parent1=None
-        m.save()
-    elif link.relation.parent2 is not None and link.relation.parent2.id==int(id2):
-        m = Modification(subject=instance, user=request.user, note="Suppression d'un lien de parenté avec " + link.relation.parent2.first_name+" "+link.relation.parent2.last_name)
-        link.relation.parent2 = None
-        m.save()
-
-
-    if link.relation.parent1 is None and link.relation.parent2 is None:
-        m = Modification(subject=instance, user=request.user, note="Suppression des parents ")
-        m.save()
-        link.delete()
-    else:
-        link.save()
-    try :
-        instance_child=Child.objects.get(child=instance)
-        form = ParentForm(request.POST or None, instance=instance_child)
-        if form.is_valid():
-            instance_child = form.save(commit=False)
-            instance_child.save()
-            m = Modification(subject=instance, user=request.user, note="parents modifiés")
-            m.save()
-            return HttpResponseRedirect(instance.get_absolute_url())
-
-    except  Child.DoesNotExist:
-        return HttpResponseRedirect(instance.get_absolute_url())
+def remove_parents(request, id):
+    relation = get_object_or_404(Relationship, id=id)
+    try:
+        instance_child=Child.objects.get(relation=relation)
+    except Child.DoesNotExist:
+        pass
 
     context = {
-        "form": form, }
-    return render(request, 'menu/individual_add_parent.html', context)
+        "child": instance_child
+    }
+    if request.method == "POST":
+        try:
+            if instance_child.relation.parent1 is not None:
+                instance_child.relation.parent1.user_who_last_updated = request.user
+                instance_child.relation.parent1.save()
+            if instance_child.relation.parent2 is not None:
+                instance_child.relation.parent2.user_who_last_updated = request.user
+                instance_child.relation.parent2.save()
+            if instance_child.child is not None:
+                subject_modif = instance_child.child
+                subject_modif.user_who_last_updated = request.user
+                subject_modif.save()
+            m2 = Modification(subject=subject_modif, user=request.user,
+                              note="Suppression de la relation parent - enfant avec " + str(instance_child.relation.parent1 or "None") + " et " + str(instance_child.relation.parent2 or "None"))
+            m2.save()
+        except Child.DoesNotExist:
+            pass
 
+        instance_child.delete()
+        return HttpResponseRedirect(subject_modif.get_absolute_url())
+
+    return render(request, "menu/delete_child.html", context)
 
 
 def update_place(request, id=None):

@@ -44,7 +44,7 @@
     </table>
     <div class="tree">
         <ul>{% if individual.get_parents %} Parents:
-                  {% for parent in individual.get_parents %}
+                    {% for parent in individual.get_parents %}
                         <li>
                           {% if not parent.relation.parent1.private or request.user|has_group:"tree_admin" %}
                           <a href="/individu/{{parent.relation.parent1.id}}">  {{parent.relation.parent1}}</a>{% endif %}
@@ -53,8 +53,8 @@
                          {% if not parent.relation.parent2.private or request.user|has_group:"tree_admin" %}
                           <a href="/individu/{{parent.relation.parent2.id}}">  {{parent.relation.parent2}}</a>{% endif %}
                         </li>
-                        {% endfor %}
-                        <p><a href="/individu/{{individual.id}}/add_parents/">Modifier les parents</a></p>
+                    {% endfor %}
+                    <p><a href="/individu/{{individual.id}}/add_parents/">Modifier les parents</a></p>
             {% else %}
                 <p><a href="/individu/{{individual.id}}/add_parents/">Ajouter les parents</a></p>
             {% endif %}
