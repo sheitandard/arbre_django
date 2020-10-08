@@ -453,33 +453,6 @@ def add_relationship(request, id=None):
     context={"form":form}
     return render(request, 'menu/individual_relation_add.html', context )
 
-
-def add_partner(request, id=None):
-    print("add_partner")
-    print(request.POST)
-    instance = get_object_or_404(Individual, id=id)
-    form = IndividualForm(request.POST or None)
-    if 'save' in request.POST:
-            print("form valid")
-            if form.is_valid() :
-                form.clean()
-                new_partner = form.save(commit=False)
-                new_partner.user_who_last_updated = request.user
-                new_partner.user_who_created = request.user
-                new_partner.save()
-                create_modification(subject=new_partner, user=request.user,
-                                 note="ajout d'un nouvel individu " + new_partner.first_name + " " + new_partner.last_name)
-                instance.user_who_last_updated = request.user
-                instance.save()
-                if instance.gender=='M':
-                    relation = Relationship(parent1=instance, parent2=new_partner)
-                else:
-                    relation = Relationship(parent2=instance, parent1=new_partner)
-                create_modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire pour "+instance.first_name + " "+instance.last_name)
-            return HttpResponseRedirect(instance.get_absolute_url()+"/add_relation")
-    context={"form":form}
-    return render(request, 'menu/individual_add.html', context )
-
 def update_relation(request, id=None):
     print("update_relation")
     relation = get_object_or_404(Relationship, id=id)

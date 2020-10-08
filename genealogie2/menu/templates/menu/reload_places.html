@@ -19,11 +19,12 @@
            update_dropdown($("#form_place_of_birth select"), json);
            update_dropdown($("#form_place_of_death select"), json);
            update_dropdown($("#form_place_of_residence select"), json);
+           update_dropdown($("#form_place_of_marriage select"), json);
                     })
          .fail(function(){
                 alert("Error!");
                });
     }
     </script>
-    <button  onclick="reload_places();">Rafraichir</button>
+    <button  onclick="reload_places();">Rafraichir les listes déroulantes des lieux </button>
 {% endblock %}

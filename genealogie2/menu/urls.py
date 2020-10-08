@@ -28,7 +28,6 @@ urlpatterns = [
 	url('^individu/(?P<id>\d+)/remove_parents/$', views.remove_parents, name='remove_parents'),
 	url('^individu/(?P<id>\d+)/add_parents/$', views.add_parents, name='add_parents'),
 	url('^individu/(?P<id>\d+)/add_relation/$', views.add_relationship, name='add_relation'),
-	url('^individu/(?P<id>\d+)/add_relation/menu/add_partner/$', views.add_partner, name='add_partner'),
 	url('^individu/(?P<id>\d+)/update_relation/$', views.update_relation, name='update_relation'),
 	url('^individu/(?P<id>\d+)/add_children/$', views.add_children, name='add_children'),
 	url('^individu/(?P<id>\d+)/add_existing_children/$', views.add_existing_children, name='add_existing_children'),
