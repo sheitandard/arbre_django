@@ -572,7 +572,8 @@ def add_location_html(request):
                 loc = form.save(commit=False)
                 loc.save()
                 create_modification(subject=loc, user=request.user, note="ajout d'un lieu")
-                return HttpResponse('<script type="text/javascript">window.opener.reload_places();window.close();</script>')
+                parameters_as_string = 'id=' + str(loc.id)
+                return HttpResponse('<script type="text/javascript">window.opener.reload_places('+parameters_as_string+');window.close();</script>')
     context={"form":form,}
     return render(request, 'menu/location_add.html', context )
 
