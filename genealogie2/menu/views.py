@@ -507,31 +507,7 @@ class RelationDelete(DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 def add_children(request, id=None):
-    print("add_childen")
-    relation = get_object_or_404(Relationship, id=id)
-    form = IndividualForm(request.POST or None)
-    instance = get_object_or_404(Individual, id=relation.parent1.id)
-    if 'save' in request.POST:
-        if form.is_valid():
-            form.clean()
-            new_children = form.save(commit=False)
-            new_children.user_who_last_updated = request.user
-            new_children.user_who_created = request.user
-            new_children.save()
-            create_modification(subject=new_children, user=request.user,
-                             note="ajout d'un nouvel individu " + new_children.first_name + " " + new_children.last_name)
-            instance.user_who_last_updated = request.user
-            instance.save()
-            relation_child = Child(relation=relation, child=new_children)
-            relation_child.save()
-            create_modification(subject=instance, user=request.user,
-                             note="ajout d'un(e) enfant pour " + instance.first_name + " " + instance.last_name)
-        return HttpResponseRedirect(instance.get_absolute_url())
-    context = {"form": form}
-    return render(request, 'menu/individual_add.html', context)
-
-def add_existing_children(request, id=None):
-    print("add_existing_children")
+    print("add_children")
     relation = get_object_or_404(Relationship, id=id)
     child_relation = Child(relation=relation)
     form = ChildForm(request.POST or None, instance = child_relation)
@@ -547,7 +523,7 @@ def add_existing_children(request, id=None):
                     "message_error" : message_error,
                     "form": form
                 }
-                return render(request, 'menu/individual_existing_children_add.html', context)
+                return render(request, 'menu/individual_children_add.html', context)
             except  Child.DoesNotExist:
                 print(child_relation)
                 print(child_relation.child)
@@ -559,7 +535,7 @@ def add_existing_children(request, id=None):
                 child_relation.save()
                 return HttpResponseRedirect(instance.get_absolute_url())
     context = {"form": form}
-    return render(request, 'menu/individual_existing_children_add.html', context)
+    return render(request, 'menu/individual_children_add.html', context)
 
 
 def add_location_html(request):

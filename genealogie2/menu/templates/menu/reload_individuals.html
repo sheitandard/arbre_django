@@ -20,6 +20,8 @@
            value_of_parent2 = $('#form_parent2').find(":selected").val();
            update_dropdown($("#form_parent1 select"), json);
            update_dropdown($("#form_parent2 select"), json);
+           update_dropdown($("#form_child select"), json);
+           $("#form_child option[value="+id+"]").prop('selected', true);
            if(value_of_parent1===""){
                 $("#form_parent1 option[value="+id+"]").prop('selected', true);
                 $("#form_parent2 option[value='"+value_of_parent2+"']").prop('selected', true);

@@ -1,0 +1,7 @@
+{% extends "menu/header.html" %}
+{% block content %}
+    {% include 'menu/reload_individuals.html' %}
+    <p> Ajouter un enfant pour {{ form.instance.relation.parent1.first_name }} {{ form.instance.relation.parent1.last_name }} et {{ form.instance.relation.parent2.first_name }} {{ form.instance.relation.parent2.last_name }} </p>
+    {% include 'menu/form.html' %}
+    <a href="menu/individual_add" target="_blank">Ajouter un nouvel individu</a>
+{% endblock %}

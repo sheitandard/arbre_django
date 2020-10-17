@@ -30,7 +30,6 @@ urlpatterns = [
 	url('^individu/(?P<id>\d+)/add_relation/$', views.add_relationship, name='add_relation'),
 	url('^individu/(?P<id>\d+)/update_relation/$', views.update_relation, name='update_relation'),
 	url('^individu/(?P<id>\d+)/add_children/$', views.add_children, name='add_children'),
-	url('^individu/(?P<id>\d+)/add_existing_children/$', views.add_existing_children, name='add_existing_children'),
 	url('^individu/(?P<pk>\d+)/delete_relation/$', views.RelationDelete.as_view(), name='delete_relation'),
 	url('^individu/(?P<pk>\d+)/delete/$', views.IndividuDelete.as_view(), name='delete_individu'),
 	url('^lieu/(?P<pk>\d+)$', views.PlaceDetailView.as_view(), name='detail_lieu') ,
