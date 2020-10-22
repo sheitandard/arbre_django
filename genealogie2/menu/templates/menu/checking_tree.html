@@ -1,0 +1,9 @@
+{% extends "menu/header.html" %}
+{% block content %}
+    {% for result in results %}
+        <p> {{ result }} </p>
+    {% endfor %}
+    <form method='POST' action='' enctype="multipart/form-data">{% csrf_token %}
+       <input type='submit' value="Vérifier l'arbre" name="check" />
+    </form>
+{% endblock %}

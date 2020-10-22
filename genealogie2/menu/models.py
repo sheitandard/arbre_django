@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import date,datetime
+from datetime import date
 from django.db.models import Q
 import svgwrite
 from svgwrite.container import Hyperlink
@@ -7,7 +7,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import fields
 from django.utils import timezone
-import pytz
 
 
 GENDER_CHOICES = (
@@ -41,13 +40,29 @@ MONTH_CHOICES = (
 month_list=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"]
 month_list_french=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"]
 # Create your models here
+def year_from_date(date):
+    if date is None:
+        return "?"
+    year = date.split(" ")[-1]
+    if len(year)==0:
+        return "?"
+    return year
+
+def nice_date(date):
+    if date is not None:
+        for month in month_list:
+            if month in date:
+                return date.replace(month, month_list_french[month_list.index(month)])
+    return date
 
 def change_date_format(date):
-    date_split=date.split("/")
-    if len(date_split)==2:
-        return month_list[int(date_split[0])-1] + " " + date_split[1]
-    elif len(date_split)==3:
-        return date_split[0] + " " + month_list[int(date_split[1]) - 1] + " " + date_split[2]
+    if date is not None and "/" in date:
+        date_split=date.split("/")
+        if len(date_split)==2:
+            return month_list[int(date_split[0])-1] + " " + date_split[1]
+        elif len(date_split)==3:
+            return date_split[0] + " " + month_list[int(date_split[1]) - 1] + " " + date_split[2]
+    return date
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType,on_delete=models.SET_NULL, null=True, blank=True)
@@ -55,7 +70,6 @@ class Modification(models.Model):
     subject = fields.GenericForeignKey('content_type', 'object_id')
     user=models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     date=models.DateTimeField()
-    #test=models.DateTimeField(null=True)
     note= models.CharField(max_length=100,null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -116,16 +130,16 @@ class Individual(models.Model):
     class Meta:
         ordering = ["last_name", "first_name", "date_of_birth"]
         verbose_name_plural = "Individu"
-    def __str__(self):
-        if self.date_of_birth is None:
-            year_birth="?"
-        else:
-            year_birth=self.date_of_birth.split(" ")[-1]
 
-        if self.date_of_death is None:
-            year_death="?"
-        else:
-            year_death=self.date_of_death.split(" ")[-1]
+    def year_birth(self):
+        return year_from_date(self.date_of_birth)
+
+    def year_death(self):
+        return year_from_date(self.date_of_death)
+
+    def __str__(self):
+        year_birth= year_from_date(self.date_of_birth)
+        year_death = year_from_date(self.date_of_death)
         return self.get_first_name() + " " + self.get_last_name() + " (" + year_birth + "-" + year_death + ")"
 
     def get_absolute_url(self):
@@ -146,16 +160,12 @@ class Individual(models.Model):
             return "?"
 
     def nice_birthdate(self):
-            for month in month_list:
-                if month in self.date_of_birth:
-                    return self.date_of_birth.replace(month, month_list_french[month_list.index(month)])
-            return self.date_of_birth
+        return nice_date(self.date_of_birth)
+
 
     def nice_deathdate(self):
-            for month in month_list:
-                if month in self.date_of_death:
-                    return self.date_of_death.replace(month, month_list_french[month_list.index(month)])
-            return self.date_of_death
+        return nice_date(self.date_of_death)
+
 
 
     def get_spouses(self):
@@ -276,9 +286,9 @@ class Individual(models.Model):
 
     def age(self):
         if self.date_of_birth:
-            if "/" in self.date_of_birth:
-                self.date_of_birth= change_date_format(self.date_of_birth)
-                self.save()
+
+            self.date_of_birth= change_date_format(self.date_of_birth)
+            self.save()
             birth=self.date_of_birth.split(" ")
             if len(birth)==1:
                 birth_day=1
@@ -294,9 +304,8 @@ class Individual(models.Model):
                 birth_year=int(birth[2])
             birth_datetime=date(birth_year,birth_month,birth_day)
         if self.date_of_death:
-            if "/" in self.date_of_death:
-                self.date_of_death= change_date_format(self.date_of_death)
-                self.save()
+            self.date_of_death= change_date_format(self.date_of_death)
+            self.save()
             death = self.date_of_death.split(" ")
             if not self.is_deceased:
                 self.is_deceased=True
@@ -354,15 +363,23 @@ class Relationship(models.Model):
         else:
             return "Vide"
 
-    def nice_marriagedate(self):
-            if self.date_of_marriage is not None:
-                if "/" in self.date_of_marriage:
-                    self.date_of_marriage = change_date_format(self.date_of_marriage)
-                    self.save()
-                for month in month_list:
-                    if month in self.date_of_marriage:
-                        return self.date_of_marriage.replace(month, month_list_french[month_list.index(month)])
-            return self.date_of_marriage
+    def year_marriage(self):
+        return year_from_date(self.date_of_marriage)
+
+    def year_divorce(self):
+        return year_from_date(self.date_of_divorce)
+
+
+    def nice_marriage_date(self):
+        self.date_of_marriage = change_date_format(self.date_of_marriage)
+        self.save()
+        return  nice_date(self.date_of_marriage)
+
+    def nice_divorce_date(self):
+        self.date_of_divorce = change_date_format(self.date_of_divorce)
+        self.save()
+        return  nice_date(self.date_of_divorce)
+
 
 
 class Child(models.Model):

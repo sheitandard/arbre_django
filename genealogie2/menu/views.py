@@ -7,6 +7,7 @@ from django.views import generic
 from django.db.models import Q
 from django.http import Http404, HttpResponseRedirect,HttpResponse, JsonResponse
 from django.views.generic.edit import UpdateView, FormView, DeleteView
+from .import_gedcom_functions import import_from_gedcom
 
 
 pays_connus = ["FRANCE","POLOGNE","ALLEMAGNE","ALGERIE", "ITALIE","ESPAGNE","ROYAUNE-UNI", "ANGLETERRE"]
@@ -164,52 +165,6 @@ def add_location(content_part):
         print("Etrange, l'endroit n'existe pas dans la base de données",ville, departement, pays, paroisse)
         return 0
 
-def add_individual(gedcom_id, first_name, last_name,gender, date_of_birth, date_of_death, place_of_birth, place_of_death,occupation, commentaire):
-    try:
-        p = Individual.objects.get(gedcom_id=gedcom_id,first_name=first_name, last_name=last_name, date_of_birth = date_of_birth)
-    except Individual.DoesNotExist:
-        p = Individual(private=False, gedcom_id=gedcom_id, first_name=first_name, last_name=last_name,gender=gender,
-                            date_of_birth = date_of_birth, date_of_death=date_of_death, place_of_birth=place_of_birth, place_of_death=place_of_death,
-                            occupation=occupation, comment=commentaire)
-        p.save()
-    else:
-        try:
-            print("Cet individu est déjà dans la base de données",first_name, last_name,date_of_birth)
-        except:
-            print("Cet individu est déjà dans la base de données et écrire son nom génère des erreurs")
-
-def get_individual(id_gedcom):
-    try:
-        ind = Individual.objects.get(gedcom_id=id_gedcom)
-        return ind
-    except Individual.DoesNotExist:
-        print("Etrange, l'individu n'existe pas dans la base de données",id_gedcom)
-        return 0
-
-def add_child(relation_id,child_id):
-    try:
-        p = Child.objects.get(child=child_id, relation=relation_id)
-    except Child.DoesNotExist:
-        p = Child(child=child_id,relation=relation_id)
-        p.save()
-    else:
-        try:
-            print("Cet enfant est déjà dans la base de données",child_id, husband_id,wife_id)
-        except:
-            print("Cet enfant est déjà dans la base de données et écrire son nom génère des erreurs")
-
-def add_relation(id_fam,husband_id,wife_id,date_marriage,place_marriage,date_divorce,status ):
-    try:
-        p = Relationship.objects.get(gedcom_id=id_fam,parent1=husband_id, parent2=wife_id)
-    except Relationship.DoesNotExist:
-        p = Relationship(gedcom_id=id_fam,parent1=husband_id,parent2=wife_id,date_of_marriage=date_marriage,place_of_marriage=place_marriage,
-            date_of_divorce=date_divorce,status=status)
-        p.save()
-    else:
-        try:
-            print("Cette relation est déjà dans la base de données",husband_id, wife_id)
-        except:
-            print("Cette relation est déjà dans la base de données")
 
 def is_current_user_admin(user=None):
     query_group = Group.objects.filter(user = user)
@@ -219,7 +174,6 @@ def is_current_user_admin(user=None):
 
 def import_gedcom(request):
     form = ReadFileForm()
-    encodage='utf-8'
     if request.method == 'POST':
         form = ReadFileForm(request.POST, request.FILES)
         if form.is_valid():
@@ -227,98 +181,7 @@ def import_gedcom(request):
                 return render(request, 'menu/read_file.html',{'content':[' Veuillez entrez un fichier de type GEDCOM (et finissant par .ged).', form]})
             else:
                 print("else")
-                content = request.FILES['fichier'].readline()
-                print(content)
-                gedcom_id=None
-                id_fam=None
-                commentaire=""
-                while content:
-                    print(content)
-                    content_part= content.decode(encodage,'ignore').split(" ")
-                    if len(content_part)>2 :
-                        if content_part[2].rstrip()=="INDI":
-                            if gedcom_id:
-                                add_individual(gedcom_id, first_name, last_name,gender, date_of_birth, date_of_death, place_of_birth, place_of_death,
-                            occupation, commentaire)
-                            first_name = '?'
-                            last_name = '?'
-                            gender = "A"
-                            date_of_birth=None
-                            date_of_death=None
-                            place_of_birth=None
-                            place_of_death=None
-                            occupation=None
-                            path_image=None
-                            commentaire=""
-                            gedcom_id=content_part[1]
-                        elif content_part[2].rstrip()=="FAM":
-                            if gedcom_id:
-                                add_individual(gedcom_id, first_name, last_name,gender, date_of_birth, date_of_death, place_of_birth, place_of_death,
-                            occupation, commentaire)
-                            if id_fam :
-                                add_relation(id_fam,husband_id,wife_id,date_marriage,place_marriage,date_divorce,status )
-                            husband_id=None
-                            gedcom_id=None
-                            wife_id=None
-                            date_marriage=None
-                            place_marriage=None
-                            date_divorce=None
-                            status="concubinage"
-                            id_fam=content_part[1]
-                        elif content_part[1]=="GIVN":
-                            first_name = ' '.join(content_part[2:]).rstrip()
-                        elif content_part[1]=="SURN":
-                            last_name = ' '.join(content_part[2:]).rstrip()
-                        elif content_part[1]=="SEX":
-                            if content_part[2].rstrip()=="M":
-                                gender = "M"
-                            else:
-                                gender = "F"
-                        elif content_part[1]=="OCCU":
-                            occupation = ' '.join(content_part[2:]).rstrip()
-                        elif content_part[1]=="NOTE":
-                            commentaire = commentaire + " ".join(content_part[2:]).rstrip()
-                        elif content_part[1]=="FILE":
-                            path_image = content_part[2].rstrip()
-                        elif content_part[1]=="HUSB":
-                            husband_id = get_individual(content_part[2].rstrip())
-                        elif content_part[1]=="WIFE":
-                            wife_id = get_individual(content_part[2].rstrip())
-                        elif content_part[1]=="CHIL":
-                            child_id = get_individual(content_part[2].rstrip())
-                        content = request.FILES['fichier'].readline()
-                    elif len(content_part)==2:
-                        type=content_part[1].rstrip()
-                        if type=="BIRT" or type=="DEAT" or type=="MARR" or type=="DIV":
-                            print("in birt")
-                            year=None
-                            month=None
-                            day=None
-                            ville=None
-                            pays=None
-                            paroisse=None
-                            departement=None
-                            content = request.FILES['fichier'].readline()
-                            while content and content.decode(encodage,'ignore').split(" ")[0]=='2':
-                                content_part= content.decode(encodage,'ignore').split(" ")
-                                if len(content_part)>2 :
-                                    if content_part[1]=="DATE":
-                                        if type=="BIRT":
-                                            date_of_birth=" ".join(content_part[2:]).rstrip()
-                                        elif type=="DEAT":
-                                            date_of_death=" ".join(content_part[2:]).rstrip()
-                                        elif type=="MARR":
-                                            date_marriage=" ".join(content_part[2:]).rstrip()
-                                            status="mariage ou Pacs"
-                                        elif type=="DIV":
-                                            date_divorce=" ".join(content_part[2:]).rstrip()
-                                content = request.FILES['fichier'].readline()
-                        else:
-                            content = request.FILES['fichier'].readline()
-                    else:
-                        content = request.FILES['fichier'].readline()
-                    if id_fam:
-                        add_relation(id_fam,husband_id,wife_id,date_marriage,place_marriage,date_divorce,status )
+                import_from_gedcom(request)
                 return render(request, 'menu/home.html')
     return render(request, 'menu/read_file.html', locals())
 
@@ -411,7 +274,14 @@ def add_parents(request, id=None):
         if  form.is_valid():
             form.clean()
             relation = form.save(commit=False)
-            relation.save()
+            try:
+                relation = Relationship.objects.get(parent1=relation.parent1, parent2=relation.parent2)
+            except Relationship.DoesNotExist:
+                try:
+                    relation = Relationship.objects.get(parent1=relation.parent2, parent2=relation.parent1)
+                except Relationship.DoesNotExist:
+                    relation.save()
+
             create_modification(subject=relation.parent1, user=request.user,
                              note="ajout d'une relation avec " + relation.parent2.first_name + " " +  relation.parent2.last_name)
             instance_child.relation = relation
@@ -585,3 +455,72 @@ def individual_list(request):
             else:
                 individu[date] = individu[date].split()[-1]
     return JsonResponse({"individuals":p2})
+
+def check_tree(request):
+    results = []
+    age_limite_de_vie = 100
+    age_minimum_pour_mariage = 15
+    age_minimum_pour_enfant = 15
+    age_maximum_homme_pour_enfant = 70
+    age_maximum_femme_pour_enfant = 50
+    if 'check' in request.POST:
+        all_individuals = Individual.objects.all()
+        for indiv in all_individuals:
+            year_birth = indiv.year_birth()
+            year_death = indiv.year_death()
+            age = indiv.age()
+            if age == "inconnu":
+                pass
+            elif int(age) > age_limite_de_vie and not indiv.is_deceased:
+                results+=[indiv.first_name+" "+indiv.last_name+" est âgé(e) de "+str(age)+" ans, êtes-vous sûr qu'il ou elle est encore en vie?\n"]
+            elif int(age) < 0:
+                results+=[indiv.first_name+" "+indiv.last_name+" est né(e) en "+year_death+" mais est mort en "+year_death+"!\n"]
+
+            all_marriages = Relationship.objects.filter( Q(parent1=indiv) | Q(parent2 =indiv) )
+            for marriage in all_marriages:
+                marriage.nice_marriage_date()
+                marriage.nice_divorce_date()
+                dates_event={ marriage.year_marriage():"mariage",
+                              marriage.year_divorce():"divorce"}
+                for year in dates_event:
+                    if year=='?':
+                        pass
+                    elif year_birth!='?' and int(year)<int(year_birth)+age_minimum_pour_mariage:
+                        if dates_event[year]=="mariage":
+                            results += [indiv.first_name + " " + indiv.last_name + " est né(e) en "+
+                                        year_birth + " mais s'est marié(e) en " + year + "!\n"]
+                        else:
+                            results += [indiv.first_name + " " + indiv.last_name + " est né(e) en "+
+                                        year_birth + " mais a divorcé en " + year + "!\n"]
+                    elif year_death!='?' and int(year)>int(year_death):
+                        if dates_event[year]=="mariage":
+                            results += [indiv.first_name + " " + indiv.last_name + " est mort(e) en "+
+                                    year_death + " mais s'est marié(e) en " + year + "!\n"]
+                        else:
+                            results += [indiv.first_name + " " + indiv.last_name + " est mort(e) en "+
+                                        year_death + " mais a divorcé en " + year + "!\n"]
+            child_relation = Child.objects.filter( Q(child=indiv))
+            for relation in child_relation:
+                list_parent = [relation.relation.parent1, relation.relation.parent2]
+                list_parent = [i for i in list_parent if i]
+                for parent in list_parent:
+                    year_birth_parent = parent.year_birth()
+                    year_death_parent = parent.year_death()
+                    gender = parent.gender
+                    if year_birth=='?':
+                        pass
+                    elif year_birth_parent!='?':
+                        age_parent=int(year_birth)-int(year_birth_parent)
+                        if int(year_birth_parent)>int(year_birth)+age_minimum_pour_enfant:
+                            results += [indiv.first_name + " " + indiv.last_name + " est né(e) en "+ year_birth + " mais son parent " + parent.first_name + " "+ parent.last_name+" n'avais que "
+                            +(year_birth-year_birth_parent)+"!\n"]
+                        if int(year_birth_parent)+age_maximum_femme_pour_enfant<int(year_birth) and gender=='F':
+                            results += [indiv.first_name + " " + indiv.last_name + " est né(e) en "+year_birth + " mais sa mère " + parent.first_name + " "+ parent.last_name+" avais déjà "+str(age_parent)+"!\n"]
+                        if int(year_birth_parent)+age_maximum_homme_pour_enfant<int(year_birth) and gender!='F':
+                            results += [indiv.first_name + " " + indiv.last_name + " est né(e) en "+year_birth + " mais son père " + parent.first_name + " "+ parent.last_name+" avais déjà "
+                            +str(age_parent)+"!\n"]
+                    elif year_death_parent!='?' and int(year_death_parent)<int(year_birth):
+                        results += [indiv.first_name + " " + indiv.last_name + " est né(e) en "+ year_birth + " mais son parent " + parent.first_name + " " + parent.last_name + " est mort(e) avavnt en " + year_death_parent + "!\n"]
+    context={"results": results,}
+    return render(request, 'menu/checking_tree.html', context)
+

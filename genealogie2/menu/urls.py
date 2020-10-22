@@ -23,6 +23,7 @@ urlpatterns = [
 	url('list_places/$',views.PlaceListView.as_view(), name='Liste des lieux'),
 	url('export_gedcom/$', function.export_gedcom, name='export_gedcom'),
 	url('export_gedcom_with_media/$', function.export_gedcom_with_media, name='export_gedcom_with_media'),
+	url('check_tree/', views.check_tree, name='check_tree'),
     url('^individu/(?P<pk>\d+)$', views.IndividualDetailView.as_view(), name='Information') ,
     url('^individu/(?P<id>\d+)/update/$', views.update_individu, name = 'update_individu'),
 	url('^individu/(?P<id>\d+)/remove_parents/$', views.remove_parents, name='remove_parents'),
@@ -40,5 +41,4 @@ urlpatterns = [
 	url('.*individual_list', views.individual_list, name="individual_list"),
 	url('^$',views.IndividualListView.as_view(), name='Liste des individus'),
 ]
-
 
