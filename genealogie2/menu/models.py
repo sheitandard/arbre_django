@@ -84,6 +84,8 @@ class Location(models.Model):
     church = models.CharField(max_length=30,null=True, blank=True)
     city_today = models.CharField(max_length=40,null=True, blank=True)
     country_today = models.CharField(max_length=40,null=True, blank=True)
+    date_of_creation = models.DateTimeField(auto_now_add=True)
+    date_of_last_update = models.DateTimeField(auto_now=True)
     user_who_created = models.ForeignKey(User, default=1, on_delete=models.SET("Deleted User"), related_name='user_who_created_location')
     user_who_last_updated = models.ForeignKey(User, default=1, on_delete=models.SET("Deleted User"), related_name='user_who_updated_location')
     class Meta:

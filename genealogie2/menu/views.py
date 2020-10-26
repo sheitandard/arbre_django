@@ -240,6 +240,7 @@ def update_place(request, id=None):
 
     if form.is_valid():
         instance=form.save(commit=False)
+        instance.user_who_last_updated = request.user
         instance.save()
         create_modification(subject=instance, user=request.user, note="modification d'un lieu" )
         return HttpResponseRedirect(instance.get_absolute_url())
