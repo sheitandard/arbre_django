@@ -3,6 +3,8 @@
     {% load static %}
     {% load has_group %}
     <h1>Lieu : {{ location.country }} {{ location.city }}</h1>
+    <p><h10> Créé le {{ location.date_of_creation }} par {{ location.user_who_created }} </h10>  </p>
+    <p><h10> Mis à jour le {{ location.date_of_last_update }} par {{ location.user_who_last_updated }} </h10>  </p>
     <table summary="detail_place" border="1" id="detail">
         <tr><td width="400px">
             <p><strong>Pays :</strong>  {{ location.country }} </p>
@@ -23,5 +25,8 @@
                     <p><strong>Eglise / arrondissement :</strong> {% if location.church is not none %}{{ location.church }}{%endif %} </p>
                     <p><a href="/lieu/{{location.id}}/update/">Modifier les données</a></p>
         </td></tr></table>
+            {% if request.user|has_group:"tree_admin" or request.user == location.user_who_created  %}
+                <p><a href="/lieu/{{location.id}}/delete/">Supprimer cet endroit</a></p>
+            {% endif %}
         {% include 'menu/includes/htmlsnippet.html' %}
 {% endblock %}

@@ -23,6 +23,8 @@
             </form>
         </table>
         <a href="menu/individual_add" target="_blank">Ajouter un nouvel individu</a>
-        <p><a href="/individu/{{form.instance.id}}/remove_parents/">Supprimer le lien avec les parents</a></p>
+        {% if request.user|has_group:"tree_admin" %}
+            <p><a href="/individu/{{form.instance.id}}/remove_parents/">Supprimer le lien avec les parents</a></p>
+        {% endif %}
     </body>
 {% endblock %}

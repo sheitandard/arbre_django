@@ -1,7 +1,6 @@
 {% extends "menu/header.html" %}
 {% block content %}
     {% load static %}
-    {% load has_group %}
     <h1>Relation du lien de enfant-parent entre {{ child.child.first_name }} {{ child.child.last_name }} et le couple {{ child.relation.parent1.first_name }} {{ child.relation.parent1.last_name }} - {{ child.relation.parent2.first_name }} {{ child.relation.parent2.last_name }}</h1>
     <form method="post">{% csrf_token %}
         <p>Etes-vous sûr(e) de vouloir supprimer définitivement ce lien ?</p>

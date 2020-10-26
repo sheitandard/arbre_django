@@ -84,6 +84,8 @@ class Location(models.Model):
     church = models.CharField(max_length=30,null=True, blank=True)
     city_today = models.CharField(max_length=40,null=True, blank=True)
     country_today = models.CharField(max_length=40,null=True, blank=True)
+    user_who_created = models.ForeignKey(User, default=1, on_delete=models.SET("Deleted User"), related_name='user_who_created_location')
+    user_who_last_updated = models.ForeignKey(User, default=1, on_delete=models.SET("Deleted User"), related_name='user_who_updated_location')
     class Meta:
         ordering = ["country", "city", "church"]
         verbose_name_plural = "Place"
@@ -121,8 +123,8 @@ class Individual(models.Model):
     email = models.CharField(max_length=30,null=True, blank=True)
     date_of_creation = models.DateTimeField(auto_now_add=True)
     date_of_last_update = models.DateTimeField(auto_now=True)
-    user_who_created =  models.ForeignKey(User, default=1, related_name='user_who_created', on_delete=models.SET("Deleted User"))
-    user_who_last_updated = models.ForeignKey(User, default=1, related_name='user_who_last_updated', on_delete=models.SET("Deleted User"))
+    user_who_created =  models.ForeignKey(User, default=1, on_delete=models.SET("Deleted User"), related_name='user_who_created_individual')
+    user_who_last_updated = models.ForeignKey(User, default=1, on_delete=models.SET("Deleted User"), related_name='user_who_updated_individual')
     birth_source=models.FileField(upload_to='uploads/src',null=True, blank=True)
     death_source = models.FileField(upload_to='uploads/src', null=True, blank=True)
     

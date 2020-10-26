@@ -44,6 +44,11 @@ class IndividualListView(generic.ListView):
 class IndividualDetailView(generic.DetailView):
     model = Individual
 
+class LocationDelete(DeleteView):
+    model = Location
+    success_url = reverse_lazy('Liste des modifications')
+    template_name = 'menu/delete_location.html'
+
 class IndividuDelete(DeleteView):
     model = Individual
     success_url = reverse_lazy('Liste des modifications')
@@ -123,7 +128,7 @@ class PlaceListView(generic.ListView):
 
 class PlaceDetailView(generic.DetailView):
     model = Location
-    template_name = 'menu/detail_place.html'
+    template_name = 'menu/location_detail.html'
 
 def index(request):
     return render(request, 'menu/home.html')
@@ -321,7 +326,7 @@ def add_relationship(request, id=None):
                 create_modification(subject=instance, user=request.user, note="ajout d'un(e) partenaire existant pour "+instance.first_name + " "+instance.last_name)
             return HttpResponseRedirect(instance.get_absolute_url())
     context={"form":form}
-    return render(request, 'menu/individual_relation_add.html', context )
+    return render(request, 'menu/relation_add.html', context )
 
 def update_relation(request, id=None):
     print("update_relation")
@@ -347,7 +352,7 @@ def update_relation(request, id=None):
                                  note="modification d'un(e) relation pour " + relation.parent2.first_name + " " + relation.parent2.last_name)
         return HttpResponseRedirect(relation.parent1.get_absolute_url())
     context = {"form": form}
-    return render(request, 'menu/individual_relation_update.html', context)
+    return render(request, 'menu/relation_update.html', context)
 
 class RelationDelete(DeleteView):
     model = Relationship
@@ -393,7 +398,7 @@ def add_children(request, id=None):
                     "message_error" : message_error,
                     "form": form
                 }
-                return render(request, 'menu/individual_children_add.html', context)
+                return render(request, 'menu/individual_add_children.html', context)
             except  Child.DoesNotExist:
                 print(child_relation)
                 print(child_relation.child)
@@ -405,7 +410,7 @@ def add_children(request, id=None):
                 child_relation.save()
                 return HttpResponseRedirect(instance.get_absolute_url())
     context = {"form": form}
-    return render(request, 'menu/individual_children_add.html', context)
+    return render(request, 'menu/individual_add_children.html', context)
 
 
 def add_location_html(request):

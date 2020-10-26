@@ -35,6 +35,7 @@ urlpatterns = [
 	url('^individu/(?P<pk>\d+)/delete/$', views.IndividuDelete.as_view(), name='delete_individu'),
 	url('^lieu/(?P<pk>\d+)$', views.PlaceDetailView.as_view(), name='detail_lieu') ,
 	url('^lieu/(?P<id>\d+)/update/$', views.update_place, name='update_lieu'),
+	url('^lieu/(?P<pk>\d+)/delete/$', views.LocationDelete.as_view(), name='delete_location'),
 	url('.*/add_location', views.add_location_html, name='add_location'),
 	url('.*/individual_add', views.add_individual_html, name='individual_add'),
 	url('.*place_list',views.place_list, name="place_list"),

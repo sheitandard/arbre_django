@@ -24,7 +24,9 @@
                     {% endfor %}
                     <input type='submit' value='Enregistrer' name="save"/>
                 </form>
-                <p><a href="/individu/{{form.instance.id}}/delete_relation/">Supprimer la relation</a></p>
+                {% if request.user|has_group:"tree_admin"  %}
+                    <p><a href="/individu/{{form.instance.id}}/delete_relation/">Supprimer la relation</a></p>
+                {% endif %}
             </td>
         </table>
     </body>

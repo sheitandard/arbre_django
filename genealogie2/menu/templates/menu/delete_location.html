@@ -1,7 +1,7 @@
 {% extends "menu/header.html" %}
 {% block content %}
     {% load static %}
-    <h1>Individu: {{ individual.last_name }} {{ individual.first_name }}</h1>
+    <h1>Location: {{ location.country }} {{ location.city }} {{ location.department }} {{ location.church }}</h1>
         <form method="post">{% csrf_token %}
             <p>Etes-vous sûr(e) de vouloir supprimer définitivement "{{ object }}" ?</p>
             <input type="submit" value="Confirmer">
